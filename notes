@@ -1,0 +1,94 @@
+Change your database models in models.py
+
+Run
+python manage.py makemigrations
+to create migrations for those changes
+
+Run
+python manage.py migrate
+to apply those changes to the database
+
+
+
+Create a new admin
+python manage.py createsuperuser
+
+
+
+Run development server
+python manage.py runserver
+
+
+
+Connect to mysql-client 
+mysql -h 127.0.0.1 -P 3306 -u root
+
+
+
+Install crispy form
+pip install --upgrade django-crispy-forms
+
+
+
+Requirements for MySQL for ubuntu
+sudo apt-get install mysql-server-5.6
+sudo apt-get install libmysqlclient-dev
+sudo pip install mysqlclient
+
+
+
+In annotationApp/annotationApp/settings.py change path in 
+DATABASES = {
+    'default': {
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'OPTIOpNS': {
+            'read_default_file': '/home/kai/Dropbox/MA/code/annotationApp/my.cnf',
+        },
+    }
+}
+
+
+
+Create a database to be used by django
+CREATE DATABASE annotationApp CHARACTER SET utf8;
+
+
+
+{# Load CSS and JavaScript #}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+export format
+
+{doc_id: {"document": "Lorem ipsum ...",
+          "annotations": [{"user": "eugen",
+                           "labels": ["rot", "grün", "blau"],
+                           "duration": "123"},
+                          {...}]},
+ doc_id: {...}}
+
+
+add export
+add label import via file
+pause button
+large database managable
+
+
+jeder user soll jedes doc genau einmal annotieren
+jedes Dokument soll x mal annotiert werden egal von welchem user
+naive bayes online implementieren
+manuelle eingabe von beispielen. 
+        Text eingeben -> klassifizieren
+        Label korregieren -> trainieren
+        konfidenz scores ausgeben (label w/)
+lernkurve
+
+
+für bessere lesbarkeit die prior p(t|c) total in probability e^
+deploy
+techinscher report
+mit den daten mach ein batch learner und evaluiere deinen classifier bbau eine learnkurve.
+perceptron online classifier
+wenn neues label hinzugefügt wird bei TRaining->classify nicht das neue label angezeigt.

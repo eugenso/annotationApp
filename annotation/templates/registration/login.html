@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block heading %}
+<h1>Login</h1>
+{% endblock %}
+
+{% block content %}
+
+<form action="/annotation/login/" method="post" accept-charset="utf-8">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="hidden" name="next" value="/annotation{% url "index" %}">
+  <input class="btn btn-default" type="submit" value="Login">
+</form>
+
+{% endblock %}

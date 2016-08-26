@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block title %}Training{% endblock %}
+
+{% block heading %}
+
+<h1>Training</h1>
+
+{% endblock %}
+
+{% block content %}
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<form action="" method="post" id="training-form">
+  {% csrf_token %}
+
+  <div class="form-group">
+    <textarea
+       form="training-form"
+       class="form-control"
+       name="trainDocument"
+       rows="5"
+       id="trainDocument">{% if not classifiedDocument %}Insert the document you want to classify here.{% else %}{{ classifiedDocument }}{% endif %}
+    </textarea>
+  </div>
+
+  <input id="classifySubmitBtn"
+         name="classifySubmit"
+         type="submit"
+         class="save btn btn-default"
+         onclick="return validateTrainForm(this);"
+         value="Classify">
+
+  </br>
+  </br>
+
+  {% if scores %}
+  <div class="container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Label</th>
+          <th>Label prior</th>
+          <th>Sum over log p(term|label)</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for label, rlt in scores.items %}
+         <tr>
+           <td>{{ label }}</td>
+           <td>{{ rlt.prior }}</td>
+           <td>{{ rlt.term_given_label }}</td>
+           <td>{{ rlt.total }}</td>
+         </tr>
+         {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if labels %}
+  {% for label in labels %}
+  <label for="id_labels_{{ forloop.counter0 }}"
+         class="btn btn-primary">
+    <input id="id_labels_{{ forloop.counter0 }}"
+           name="labels"
+           value="{{ label.pk }}"
+           {% if label.option == 'check' %}
+           type="checkbox"
+           {% endif %}
+           {% if label.option == 'radio' %}
+           type="radio"
+           {% endif %}
+           autocomplete="off"></input> {{ label }} </label>
+  {% endfor %}
+  {% else %}
+  <p>Oops, something went wrong. No labels were found.</p>
+  {% endif %}
+
+  </br>
+  </br>
+
+  <input id="trainSubmitBtn"
+         name="trainSubmit"
+         type="submit"
+         onclick="return validateTrainForm(this);"
+         class="save btn btn-default"
+         value="Train"></input>
+
+</form>
+
+{% if proposals %}
+{% for proposal in proposals %}
+<div name="proposals" style="display: none;">{{ proposal }}</div>
+{% endfor %}
+{% endif %}
+
+{% endblock %}
