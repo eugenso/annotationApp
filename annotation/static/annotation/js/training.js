@@ -12,9 +12,9 @@
 //     startTime = new Date();
 // };
 
-$('textarea#trainDocument').focus(function() {
-    $(this).val('');
-});
+// $('textarea#trainDocument').focus(function() {
+//     $(this).val('');
+// });
 
 
 function validateTrainForm(button){

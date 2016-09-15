@@ -24,7 +24,7 @@ with open('/etc/secret_key.txt') as f:
     SECRET_KEY = f.read().strip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -140,4 +140,6 @@ SESSION_COOKIE_DOMAIN = 'maggie.lt.informatik.tu-darmstadt.de'
 
 SESSION_COOKIE_PATH ='/annotation/'
 
-#USE_X_FORWARDED_HOST = True
+BASE_URL = 'http://maggie.lt.informatik.tu-darmstadt.de/annotation/'
+
+USE_X_FORWARDED_HOST = True

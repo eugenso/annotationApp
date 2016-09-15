@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 class Document(models.Model):
     document = models.CharField(max_length=10000)
     doc_id = models.CharField(max_length=1000)
+    preprocessed = models.CharField(max_length=10000)
     trainInstance = models.BooleanField()
     #
     def __str__(self):
@@ -42,11 +43,13 @@ class Annotation(models.Model):
 class NBC_class_count(models.Model):
     label = models.ForeignKey(Label)
     count = models.IntegerField()
+    total_word_count = models.IntegerField()
     #
     def __str__(self):
         count = 'Class count: ' + str(self.count)
         label = ' of label: ' + self.label.__str__()
-        return count + label
+        words = ' with a total of ' + str(self.total_word_count) + ' words'
+        return count + label + words
 
 
 @python_2_unicode_compatible

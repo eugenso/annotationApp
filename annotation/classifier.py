@@ -5,8 +5,10 @@ from annotation.models import NBC_class_count, NBC_word_count_given_class, NBC_v
 from django.db.models import F, FloatField, Sum, IntegerField
 
 from nltk import word_tokenize
-from math import log
+from math import log, exp
 from operator import itemgetter
+from pprint import pprint
+import numpy as np
 import re
 import sys
 
@@ -15,7 +17,7 @@ def update_class_count(labels):
     # are existing class count objects, their counts are being
     # updated. Otherwise the objects are initialized with 0.
     if not NBC_class_count.objects.all():
-        [NBC_class_count(label=label, count=0).save()
+        [NBC_class_count(label=label, count=0, total_word_count=0).save()
          for label in Label.objects.all()]
     for label in labels:
         for cc in NBC_class_count.objects.filter(label=label):
@@ -44,6 +46,9 @@ def update_word_count(tokens, labels):
                 vocab.save()
                 NBC_word_count_given_class(
                     label=label, word=vocab, count=1).save()
+            cc = NBC_class_count.objects.filter(label=label).first()
+            cc.total_word_count = cc.total_word_count +1
+            cc.save()
 
 
 def relative_term_freq(token, label):
@@ -59,16 +64,9 @@ def relative_term_freq(token, label):
             Tct = 0
     else:
         Tct = 0
-        # All words that are present in the class
-    present_words = NBC_word_count_given_class.objects.filter(label=label)
-    if present_words:
-        # Number of remaining words that are not present in the class but
-        # in the vocabulary.
-        remaining = vocabulary.count() - present_words.count()
-        Tct_sum = remaining + present_words.aggregate(
-            sum=Sum(F('count')+1, output_field=IntegerField()))['sum']
-    else:
-        Tct_sum = vocabulary.count()
+        #
+    Tct_sum = NBC_class_count.objects.filter(
+        label=label).first().total_word_count + vocabulary.count()
     return (Tct + 1) / Tct_sum
 
 
@@ -76,20 +74,24 @@ def preprocessing(raw_document):
     urls = r'(http.+?(\s|$))'
     specialchar =  r'|[^A-Za-z\s]'
     doc = raw_document.lower()
-    tokens = word_tokenize(re.sub(urls+specialchar, '', doc))
+    tokens = word_tokenize(re.sub(urls+specialchar, ' ', doc))
     return tokens
 
 
 def online_train(document, labels):
     update_class_count(labels)
-    tokens = preprocessing(document.document)
-    update_word_count(tokens, labels)
+    update_word_count(document.preprocessed.split(' '), labels)
 
 
 def predict(document):
-    tokens = preprocessing(document)
-    scores = {}
-    N = Document.objects.count()
+    # To predict the label of a document first get the preprocessed
+    # version.
+    tokens = document.preprocessed.split(' ')
+    scores = {} # holds the end result
+    # Sum over the field 'count' in the table NBC_class_count to know
+    # how many documents there are in total.
+    N = NBC_class_count.objects.aggregate(Sum('count'))['count__sum']
+    # The calculation for each label can be done independently
     for c in NBC_class_count.objects.all():
         label = c.label.__str__()
         scores[label] = {}
@@ -103,11 +105,35 @@ def predict(document):
         for token in tokens:
             scores[label]['term_given_label'] += log(
                 relative_term_freq(token, c.label))
-            scores[label]['total'] = scores[label]['prior']+scores[label]['term_given_label']
+            #
+        scores[label]['total'] = scores[label]['prior']+scores[label]['term_given_label']
+        #scores[label]['total'] = scores[label]['term_given_label']
+        scores[label]['prior'] = exp(scores[label]['prior'])
+        #scores[label]['term_given_label'] = exp(scores[label]['term_given_label'])
+        scores[label]['total'] = exp(scores[label]['total'])
+        #
+    # ask eugen again
+    for c in NBC_class_count.objects.all():
+        label = c.label.__str__()
+        scores[label]['normalized'] = np.power(scores[label]['total'], 1/(len(tokens)+1))
+    # normalize
+    total_sum = 0
+    for c in NBC_class_count.objects.all():
+        label = c.label.__str__()
+        total_sum += scores[label]['normalized']
+    for c in NBC_class_count.objects.all():
+        label = c.label.__str__()
+        if scores[label]['normalized'] != 0:
+            scores[label]['normalized'] = scores[label]['normalized'] / total_sum
+        else:
+            scores[label]['normalized'] = 0.0
     return scores
 
 
 def predict_label(document, scores={}):
+    # This function adds a little abstraction for convenience but more
+    # importantly it decides which label is picked based on the
+    # probabilities for each label.
     if scores:
         scores = map(lambda l: (l[0], l[1]['total']), scores.items())
     else:
@@ -119,3 +145,33 @@ def predict_label(document, scores={}):
     else:
         predicted_label = None
     return predicted_label
+
+def uncertainty_sampling(documents):
+    if predict(documents[0]):
+        # predict the scores for all documents
+        pred_scores = map(predict, documents)
+        # for every document sort the scores of all labels
+        sorted_scores = map(lambda score:
+                            sorted(map(lambda val: val['normalized'],
+                                       score.values()), reverse=True),
+                            pred_scores)
+        # calculate the margin between the two most likely labels
+        pred_margin = map(lambda scores: scores[0]-scores[1], sorted_scores)
+        # associate the margins with their respective documents and sort
+        # them
+        doc_margin = sorted(zip(documents, pred_margin),
+                            key=itemgetter(1))
+        # unzip the margins from the documents and return the documents
+        return zip(*doc_margin)[0]
+    else:
+        return documents
+
+
+
+    # predict the labels for all scores
+    # pred_label = map(lambda score: predict_label(None, score), pred_scores)
+    # go over all pred_scores and select the normalized score for the
+    # predicted label.
+    # pred_norm = map(lambda idx:
+    #                 pred_scores[idx][pred_label[idx].label]['normalized'],
+    #                 range(len(documents)))

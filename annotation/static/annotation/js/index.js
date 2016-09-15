@@ -30,6 +30,9 @@ window.onload = function(){
         document.addEventListener("keyup", function(e){
             if(e){
                 switch(e.keyCode){
+                case 48:
+                    if(labels.length > 0){trigger(labels[labels.length-1]);}
+                    break;
                 case 49:
                     if(labels.length > 0){trigger(labels[0]);}
                     break;

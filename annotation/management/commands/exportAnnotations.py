@@ -11,7 +11,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         documents = Document.objects.filter(trainInstance=False)
         export = {}
-        [export.update({doc.doc_id: {"document": doc.document,
+        [export.update({doc.doc_id: {"document": doc.document.encode('utf8'),
                                      "annotations": self.getAnnotations(doc)}})
          for doc in documents]
         json_export = json.dumps(export)

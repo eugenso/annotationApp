@@ -24,7 +24,10 @@ def selectDocument():
     if empty_doc:
         document = empty_doc
     else:
-        document = random.choice(Document.objects.all())
+        document = Document(document='ALL DOCUMENTS HAVE BEEN ANNOTATED. THANK YOU FOR YOUR PARTICIPATION!',
+                            doc_id='',
+                            preprocessed='',
+                            trainInstance=True)
     return document
 
 
@@ -57,7 +60,7 @@ def index(request):
             context['document'] = document
             form = AnnotationForm(labels)
             context['form'] = form
-            proposals = clf.predict_label(document.document)
+            proposals = clf.predict_label(document)
             if proposals:
                 context['proposals'] = map(lambda l: l.pk, [proposals])
                 #
@@ -67,7 +70,7 @@ def index(request):
         context['document'] = document
         form = AnnotationForm(labels)
         context['form'] = form
-        proposals = clf.predict_label(document.document)
+        proposals = clf.predict_label(document)
         if proposals:
             context['proposals'] = map(lambda l: l.pk, [proposals])
             #
@@ -86,31 +89,32 @@ def training(request):
             # (classifySubmit) or the train button (trainSubmit) was
             # pressed diffent actions are performed
             if 'classifySubmit' in form.data:
-                document = form.data['trainDocument']
+                document = Document(document=form.data['trainDocument'],
+                                    doc_id='doc to be classified',
+                                    preprocessed=' '.join(clf.preprocessing(
+                                        form.data['trainDocument'])),
+                                    trainInstance=True)
                 # only is there is a document and it contains words it
                 # will be classified
-                if document and re.search(r'[A-Za-z]+', document):
-                    scores = clf.predict(document)
-                    if scores:
-                        context['scores'] = scores
-                        proposals = clf.predict_label(document, scores=scores)
-                        if proposals:
-                            context['proposals'] = map(lambda l: l.pk, [proposals])
+                scores = clf.predict(document)
+                if scores:
+                    context['scores'] = scores
+                    proposals = clf.predict_label(document, scores=scores)
+                    if proposals:
+                        context['proposals'] = map(lambda l: l.pk, [proposals])
                     else:
                         raise ValidationError(
                             'There is no predictive model yet. Please train at least one document before classifing',
                             code='invalid',
                         )
-                    context['classifiedDocument'] = document
-                else:
-                    raise ValidationError(
-                        'The training document has to contain words!',
-                        code='invalid',
-                    )
+                    context['classifiedDocument'] = document.document
+
             #elif 'trainSubmit' in form.data:
             else:
                 document = Document(document=form.data['trainDocument'],
                                     doc_id=str(datetime.datetime.now()),
+                                    preprocessed=' '.join(clf.preprocessing(
+                                        form.data['trainDocument'])),
                                     trainInstance=True)
                 document.save()
                 annotation = Annotation(document=document,
@@ -132,12 +136,3 @@ def training(request):
         return render(request,
                       'annotation/training.html',
                       context)
-
-
-# @login_required(login_url='user_login')
-# def detail(request, document_id):
-#     try:
-#         document = Document.objects.get(pk=document_id)
-#     except Document.DoesNotExist:
-#         raise Http404("Document does not exist")
-#     return render(request, 'annotation/detail.html', {'document': document})
