@@ -146,26 +146,6 @@ def predict_label(document, scores={}):
         predicted_label = None
     return predicted_label
 
-def uncertainty_sampling(documents):
-    if predict(documents[0]):
-        # predict the scores for all documents
-        pred_scores = map(predict, documents)
-        # for every document sort the scores of all labels
-        sorted_scores = map(lambda score:
-                            sorted(map(lambda val: val['normalized'],
-                                       score.values()), reverse=True),
-                            pred_scores)
-        # calculate the margin between the two most likely labels
-        pred_margin = map(lambda scores: scores[0]-scores[1], sorted_scores)
-        # associate the margins with their respective documents and sort
-        # them
-        doc_margin = sorted(zip(documents, pred_margin),
-                            key=itemgetter(1))
-        # unzip the margins from the documents and return the documents
-        return zip(*doc_margin)[0]
-    else:
-        return documents
-
 
 
     # predict the labels for all scores

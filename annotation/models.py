@@ -16,6 +16,28 @@ class Document(models.Model):
 
 
 @python_2_unicode_compatible
+class AnnotationQueue(models.Model):
+    user = models.OneToOneField(User,
+                                on_delete=models.CASCADE,
+                                primary_key=True)
+    def __str__(self):
+        user = 'User: ' + self.user.__str__()
+        return user #+ QueueElement.objects.filter(queue=self)
+
+
+@python_2_unicode_compatible
+class QueueElement(models.Model):
+    document = models.OneToOneField(Document,
+                                    on_delete=models.CASCADE,
+                                    primary_key=True)
+    queue = models.ForeignKey(AnnotationQueue)
+    proposalFlag = models.BooleanField(default=False)
+    def __str__(self):
+        proposal = ' proposal: ' + self.proposalFlag.__str__()
+        #docs = ' '.join(map(lambda d: d.pk, self.documents.all()))
+        return proposal# + str(docs[:50])
+
+@python_2_unicode_compatible
 class Label(models.Model):
     label = models.CharField(max_length=100)
     option = models.CharField(max_length=5)
@@ -29,14 +51,18 @@ class Annotation(models.Model):
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
     user = models.ForeignKey(User)
     labels = models.ManyToManyField(Label)
+    proposals = models.ManyToManyField(Label, related_name='proposals')
     duration = models.CharField(max_length=100)
+    dateTime =  models.DateTimeField(auto_now_add=True)
     #
     def __str__(self):
         user = 'User: ' + self.user.__str__()
         duration = ', duration: ' + str(round(float(self.duration)/100)/10) + ' secs, '
-        labels = 'labels: ' + ', '.join([l.label for l in self.labels.all()])
+        dateTime = 'on ' + self.dateTime.strftime("%Y-%m-%d %H:%M:%S") + ', '
+        labels = 'labels: ' + ', '.join([l.label for l in self.labels.all()]) + ', '
+        proposals = 'proposals: ' + ', '.join([p.label for p in self.proposals.all()])
         docs = ', doc: ' + self.document.__str__().decode('utf-8')
-        return user + duration + labels + docs
+        return user + duration + dateTime + labels + proposals + docs
 
 
 @python_2_unicode_compatible

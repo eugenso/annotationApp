@@ -1,10 +1,11 @@
 from django.core.management.base import BaseCommand, CommandError
 from annotation.models import Document, Label
-from sklearn.metrics import confusion_matrix, accuracy_score
+from sklearn.metrics import accuracy_score
 from pprint import pprint
+
 import annotation.classifier as clf
 import annotation.document_selection as sel
-import warnings
+import numpy as np
 import re
 
 class Command(BaseCommand):
@@ -15,10 +16,6 @@ class Command(BaseCommand):
         parser.add_argument('testFile',
                             type=str,
                             help='Path to file containing the test examples. It is assumed that each line contains an example.')
-        parser.add_argument('--split-frac',
-                            nargs='*',
-                            type=float,
-                            help='Fractions of training data used for each learning step. Fractions add up in occuring order and have to sum up to one. Example: The sequence 0.1 0.1 0.2 0.3 0.3 creates learning steps with 10, 20, 40, 70, and 100 percent of the training data.')
         parser.add_argument('--split-abs',
                             nargs='*',
                             type=int,
@@ -50,9 +47,7 @@ class Command(BaseCommand):
                                   document_texts[idx])),
                               trainInstance=True)
                      for idx in range(len(document_texts))]
-        rlt = (documents, map(lambda l: [l], labels))
-        pprint(map(lambda r: (r[0].document[:20],r[1][0].label),zip(rlt[0], rlt[1])))
-        return rlt
+        return (documents, map(lambda l: [l], labels))
 
 
     def evaluate(self, testLabels):
@@ -106,60 +101,6 @@ class Command(BaseCommand):
         # Read train and test data from files
         (trainDocuments, trainLabels) = self.readTSV(options['trainFile'])
         (testDocuments, testLabels) = self.readTSV(options['testFile'])
-        N = len(trainDocuments)
-        if options['split_frac']:
-            if sum(options['split_frac']) == 1:
-                # conversion from fractions to absolute numbers
-                absolute = map(lambda f: int(round(N*f)), options['split_frac'])
-                # In case the conversion from fractions to absolute
-                # numbers produced an odd result that does not sum up
-                # to the total number of training examples, remove the
-                # last element and add the rest
-                steps = absolute[:-1] + [N-sum(absolute[:-1])]
-                self.processSteps(trainDocuments, trainLabels,
-                                  testDocuments, testLabels,
-                                  split, options['active'])
-            else:
-                raise Exception('--split-farc arguments have to sum up to 1.')
-        elif options['split_abs']:
-            if sum(options['split_abs']) != N:
-                too_few_args = '--split-abs arguments have to sum up to the number of training examples. In the file "'+options['trainFile']+'" '+str(N)+' training examples were found.'
-                warnings.warn(too_few_args, Warning)
-            self.processSteps(trainDocuments, trainLabels,
-                                  testDocuments, testLabels,
-                                  options['split_abs'], options['active'])
-            # else:
-            #     raise Exception('--split-abs arguments have to sum up to the number of training examples. In the file "'+options['trainFile']+'" '+str(N)+' training examples were found.')
-        else:
-            raise Exception('One type of data split has to be entered. Either --split-frac or --split-abs')
-
-
-        # # Divide the training data into learning steps. For N=3300 the
-        # # number of training examples and options['split_frac']=[0.1,
-        # # 0.1, 0.2, 0.3, 0.3] the resulting stepCount should be [0,
-        # # 330, 660, 1320, 2310, 3300]
-        # stepCount = reduce(lambda seq, step:
-        #                    seq+[step+seq[-1]],
-        #                    split, [0])[:-1]+[N]
-
-        # # Go over every step pair and every example in the step
-        # # and train the classifier. After every step classify all
-        # # test examples and calculate their accuracy, precision,
-        # # etc.
-        # results = []
-
-        # # create the steps
-        # for (fromStep, toStep) in zip(stepCount[:-1], stepCount[1:]):
-        #     # step over and train
-        #     for idx in range(fromStep, toStep):
-        #         print str(idx) + ' ' + str((fromStep, toStep))
-        #         clf.online_train(trainDocuments[idx], [trainLabels[idx]])
-        #         trainDocuments[idx].save()
-        #         # make predictions
-        #     preds = [clf.predict(testDocuments[idx])
-        #              for idx in range(len(testDocuments))]
-        #     results = results + [preds]
-        # with open('results', 'wt') as resultFile:
-        #     pprint(results, stream=resultFile)
-        #     #
-        # self.evaluate(testLabels)
+        self.processSteps(trainDocuments, trainLabels,
+                          testDocuments, testLabels,
+                          options['split_abs'], options['active'])

@@ -70,3 +70,10 @@ print rlta
 
 (testDocuments, testLabels) = Command.readTSV(Command(), 'relevance-test.tsv')
 rlt = Command.evaluate(Command(), testLabels)
+
+
+
+kai = User.objects.filter(username='kai').first()
+docs = Document.objects.all()[:3]
+
+aq= AnnotationQueue(user = kai)

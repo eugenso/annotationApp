@@ -17,7 +17,7 @@ import annotation.classifier as clf
 
 def selectDocument():
     empty_doc = Document.objects.filter(trainInstance=False).exclude(
-        id__in=map(lambda a: a.document.pk ,Annotation.objects.all())).first()
+        id__in=map(lambda a: a.document.pk, Annotation.objects.all())).first()
     # empty_doc = Document.objects.exclude(
     #     id__in=map(lambda a: a.document.pk ,Annotation.objects.all()),
     #     trainInstance=True).first()
@@ -51,8 +51,9 @@ def index(request):
 
             annotation.save() # save the annotation to the DB
             #
-            [annotation.labels.add(label)
-             for label in form.cleaned_data['labels']]
+            annotation.labels.add(*form.cleaned_data['labels'])
+            old_proposals = map(int, re.findall(r'\d+', form.data['old_proposal']))
+            annotation.proposals.add(*old_proposals)
             #
             clf.online_train(old_doc, form.cleaned_data['labels'])
 
