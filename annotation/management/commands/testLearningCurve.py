@@ -4,7 +4,7 @@ from sklearn.metrics import accuracy_score
 from pprint import pprint
 
 import annotation.classifier as clf
-import annotation.document_selection as sel
+import annotation.active_selection as sel
 import numpy as np
 import re
 

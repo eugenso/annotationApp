@@ -28,7 +28,8 @@ window.onload = function(){
             }
         };
         document.addEventListener("keyup", function(e){
-            if(e){
+            doc = document.getElementById("document");
+            if(e && doc){
                 switch(e.keyCode){
                 case 48:
                     if(labels.length > 0){trigger(labels[labels.length-1]);}
@@ -64,6 +65,8 @@ window.onload = function(){
                     if (!labels.reduce(function(r, l){return r || l.checked;},
                                        false)){
                         alert('Please select at least one label.');
+                    }else if (doc.innerHTML == "YOU HAVE NO MORE DOCUMENTS LEFT TO ANNOTATE. THANK YOU FOR YOUR PARTICIPATION!"){
+                        alert('There are no more documents to annotate.');
                     }else{
                         var form = document.forms[0]
                         if(form.id == "annotation-form"){

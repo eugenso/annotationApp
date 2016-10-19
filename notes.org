@@ -1,4 +1,4 @@
-Change your database models in models.py
+* database setup
 
 Run
 python manage.py makemigrations
@@ -18,11 +18,14 @@ python manage.py createsuperuser
 Run development server
 python manage.py runserver
 
+* Some stuff might be useful at some point
 
-
-Connect to mysql-client 
+Connect to mysql-client
 mysql -h 127.0.0.1 -P 3306 -u root
 
+
+Serving static files in production
+sudo python manage.py collectstatic
 
 
 Install crispy form
@@ -37,7 +40,7 @@ sudo pip install mysqlclient
 
 
 
-In annotationApp/annotationApp/settings.py change path in 
+In annotationApp/annotationApp/settings.py change path in
 DATABASES = {
     'default': {
         # 'ENGINE': 'django.db.backends.sqlite3',
@@ -79,7 +82,7 @@ large database managable
 jeder user soll jedes doc genau einmal annotieren
 jedes Dokument soll x mal annotiert werden egal von welchem user
 naive bayes online implementieren
-manuelle eingabe von beispielen. 
+manuelle eingabe von beispielen.
         Text eingeben -> klassifizieren
         Label korregieren -> trainieren
         konfidenz scores ausgeben (label w/)
@@ -92,3 +95,39 @@ techinscher report
 mit den daten mach ein batch learner und evaluiere deinen classifier bbau eine learnkurve.
 perceptron online classifier
 wenn neues label hinzugefügt wird bei TRaining->classify nicht das neue label angezeigt.
+
+
+* 30.09.2016
+
++implement priority queue for document selection. prioritise documents
+that have at least one, but not the maximum amount of
+annotations. maximum amount should be configurable. no double
+annotation from one annotator.+
+
+
++Timestamp for the annotations proposal/no proposal field+
+
++wrong proposal?+
+
++config for how often do the annotator get no proposal+
+
++annotator bias regarding the proposed labels.+
+
+
+* 14.10.2016
+
+to addDocuments you have to have nltk stuff
+
++If no annotationQueue exist display something usefull not crap+
+
+check why there are double annoations
+
+highlight keywords in text box
+
++on page load set focus to text area+
+
++restrict js to site with focus on an element+
+
++If all documents are annotated catch the value error+
+
++remove http login+

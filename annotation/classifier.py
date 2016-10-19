@@ -1,6 +1,6 @@
 from __future__ import division
 
-from annotation.models import Document, Label
+from annotation.models import Document, Label, Score
 from annotation.models import NBC_class_count, NBC_word_count_given_class, NBC_vocabulary
 from django.db.models import F, FloatField, Sum, IntegerField
 
@@ -127,6 +127,14 @@ def predict(document):
             scores[label]['normalized'] = scores[label]['normalized'] / total_sum
         else:
             scores[label]['normalized'] = 0.0
+        # save scores to db
+        dbScore, created = Score.objects.get_or_create(document=document,
+                                                       label=c.label)
+        dbScore.nbc_normalized = scores[label]['normalized']
+        dbScore.nbc_prior = scores[label]['prior']
+        dbScore.nbc_term_given_label = scores[label]['term_given_label']
+        dbScore.nbc_total = scores[label]['total']
+        dbScore.save()
     return scores
 
 

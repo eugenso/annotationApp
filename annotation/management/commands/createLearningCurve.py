@@ -3,7 +3,7 @@ from annotation.models import Document, Label
 from sklearn.metrics import confusion_matrix, accuracy_score
 from pprint import pprint
 import annotation.classifier as clf
-import annotation.document_selection as sel
+import annotation.active_selection as sel
 import warnings
 import re
 

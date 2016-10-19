@@ -5,11 +5,22 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
 
 @python_2_unicode_compatible
+class Label(models.Model):
+    label = models.CharField(max_length=100)
+    option = models.CharField(max_length=5)
+    #
+    def __str__(self):
+        return self.label
+
+
+@python_2_unicode_compatible
 class Document(models.Model):
     document = models.CharField(max_length=10000)
     doc_id = models.CharField(max_length=1000)
     preprocessed = models.CharField(max_length=10000)
     trainInstance = models.BooleanField()
+    active_prediction = models.ForeignKey(Label, null=True, blank=True)
+    margin = models.FloatField(default=1.0)
     #
     def __str__(self):
         return self.document[:100]
@@ -20,30 +31,46 @@ class AnnotationQueue(models.Model):
     user = models.OneToOneField(User,
                                 on_delete=models.CASCADE,
                                 primary_key=True)
+    max_anno_num = models.IntegerField(default=0)
     def __str__(self):
         user = 'User: ' + self.user.__str__()
-        return user #+ QueueElement.objects.filter(queue=self)
+        elements = ' '.join(map(lambda e: e.__str__(),
+                                QueueElement.objects.filter(queue=self)))
+        return user + '  (rank/doc_pk/proposal): ' + elements
 
 
 @python_2_unicode_compatible
 class QueueElement(models.Model):
-    document = models.OneToOneField(Document,
-                                    on_delete=models.CASCADE,
-                                    primary_key=True)
+    document = models.ForeignKey(Document,
+                                 on_delete=models.CASCADE)
     queue = models.ForeignKey(AnnotationQueue)
-    proposalFlag = models.BooleanField(default=False)
+    proposalFlag = models.CharField(max_length=15, default='no proposal')
+    rank = models.IntegerField(default=0)
     def __str__(self):
-        proposal = ' proposal: ' + self.proposalFlag.__str__()
-        #docs = ' '.join(map(lambda d: d.pk, self.documents.all()))
-        return proposal# + str(docs[:50])
+        doc = str(self.document.pk)
+        proposal = self.proposalFlag
+        rank = str(self.rank)
+        return rank + '/' + doc + '/' + proposal + ','
+
 
 @python_2_unicode_compatible
-class Label(models.Model):
-    label = models.CharField(max_length=100)
-    option = models.CharField(max_length=5)
-    #
+class Score(models.Model):
+    document = models.ForeignKey(Document,
+                                 on_delete=models.CASCADE)
+    label = models.ForeignKey(Label,
+                              on_delete=models.CASCADE)
+    nbc_normalized = models.FloatField(default=0.0)
+    nbc_prior = models.FloatField(default=0.0)
+    nbc_term_given_label = models.FloatField(default=0.0)
+    nbc_total = models.FloatField(default=0.0)
     def __str__(self):
-        return self.label
+        l = self.label.__str__() + ' '
+        d = '' #self.document.__str__() + ' '
+        n = str(self.nbc_normalized) + ' '
+        p = str(self.nbc_prior) + ' '
+        tgl = str(self.nbc_term_given_label) + ' '
+        t = str(self.nbc_total)
+        return l+d+n+p+tgl+t
 
 
 @python_2_unicode_compatible

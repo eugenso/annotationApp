@@ -12,6 +12,9 @@ class Command(BaseCommand):
         documents = Document.objects.filter(trainInstance=False)
         export = {}
         [export.update({doc.doc_id: {"document": doc.document.encode('utf8'),
+                                     "prediction": doc.active_prediction.label if
+                                     doc.active_prediction else "",
+                                     "margin": doc.margin,
                                      "annotations": self.getAnnotations(doc)}})
          for doc in documents]
         json_export = json.dumps(export)
@@ -20,7 +23,8 @@ class Command(BaseCommand):
 
 
     def getAnnotations(self, doc):
-        return [{"user": anno.user.username + ' pk: ' + str(anno.user.pk),
+        return [{"user": anno.user.username,
+                 "user_pk": str(anno.user.pk),
                  "labels": map(lambda l: l.label, Label.objects.filter(annotation=anno)),
                  "duration": anno.duration}
                 for anno in Annotation.objects.filter(document=doc)]

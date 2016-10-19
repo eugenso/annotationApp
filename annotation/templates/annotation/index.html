@@ -13,19 +13,27 @@
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
+<!-- <div class="input-group"> -->
+<!--   <input type="text" class="form-control" placeholder='<span class="tag tag-primary">Primary</span>'> -->
+<!--   <span class="input-group-btn"> -->
+<!--     <button class="btn btn-secondary" type="button">Add</button> -->
+<!--   </span> -->
+<!-- </div> -->
+
+</br>
+
 {% if document %}
 <p>
   <div class="form-group">
     <textarea
        class="form-control"
        rows="5"
-       id="document" readonly>{{ document.document }}</textarea>
+       id="document" readonly autofocus>{{ document.document }}</textarea>
   </div>
 </p>
 {% else %}
 <p>Oops, something went wrong. No documents were found.</p>
 {% endif %}
-
 
 <form action="/annotation/" method="post" id="annotation-form" onsubmit="return measureUserTime();">
   {% csrf_token %}

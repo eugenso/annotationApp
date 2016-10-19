@@ -13,23 +13,37 @@ from annotation.models import Document, Label, Annotation
 from annotation.forms import AnnotationForm, TrainingForm
 
 import annotation.classifier as clf
+import annotation.active_selection as sel
+import logging
 
+# def selectDocument():
+#     empty_doc = Document.objects.filter(trainInstance=False).exclude(
+#         id__in=map(lambda a: a.document.pk, Annotation.objects.all())).first()
+#     # empty_doc = Document.objects.exclude(
+#     #     id__in=map(lambda a: a.document.pk ,Annotation.objects.all()),
+#     #     trainInstance=True).first()
+#     if empty_doc:
+#         document = empty_doc
+#     else:
+#         document = Document(document='ALL DOCUMENTS HAVE BEEN ANNOTATED. THANK YOU FOR YOUR PARTICIPATION!',
+#                             doc_id='',
+#                             preprocessed='',
+#                             trainInstance=True)
+#     return document
 
-def selectDocument():
-    empty_doc = Document.objects.filter(trainInstance=False).exclude(
-        id__in=map(lambda a: a.document.pk, Annotation.objects.all())).first()
-    # empty_doc = Document.objects.exclude(
-    #     id__in=map(lambda a: a.document.pk ,Annotation.objects.all()),
-    #     trainInstance=True).first()
-    if empty_doc:
-        document = empty_doc
+def selectProposal(document, proposalFlag):
+    if proposalFlag == 'proposal':
+        if document.active_prediction:
+            proposal = [document.active_prediction.pk]
+        else:
+            proposal = []
+    elif proposalFlag == 'wrong proposal':
+        predicted_label = document.active_prediction.pk
+        wrongLabels = list(set(Label.objects.all())-set(predicted_label))
+        proposal = [sample(wrongLabels, 1)[0].pk]
     else:
-        document = Document(document='ALL DOCUMENTS HAVE BEEN ANNOTATED. THANK YOU FOR YOUR PARTICIPATION!',
-                            doc_id='',
-                            preprocessed='',
-                            trainInstance=True)
-    return document
-
+        proposal = []
+    return proposal
 
 @login_required(login_url='/annotation/login/') #user_login
 def index(request):
@@ -38,6 +52,7 @@ def index(request):
     context['labels'] = labels
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
+        logging.info(request.POST)
         # create a form instance and populate it with data from the request:
         form = AnnotationForm(labels, request.POST)
         # check whether it's valid:
@@ -57,25 +72,22 @@ def index(request):
             #
             clf.online_train(old_doc, form.cleaned_data['labels'])
 
-            document = selectDocument()
+            document, proposalFlag = sel.selectDocument(request.user)
+            context['proposals'] = selectProposal(document, proposalFlag)
             context['document'] = document
             form = AnnotationForm(labels)
             context['form'] = form
-            proposals = clf.predict_label(document)
-            if proposals:
-                context['proposals'] = map(lambda l: l.pk, [proposals])
-                #
+
             return render(request, 'annotation/index.html', context)
     else:
-        document = selectDocument()
+        document, proposalFlag = sel.selectDocument(request.user, True)
+        context['proposals'] = selectProposal(document, proposalFlag)
         context['document'] = document
         form = AnnotationForm(labels)
         context['form'] = form
-        proposals = clf.predict_label(document)
-        if proposals:
-            context['proposals'] = map(lambda l: l.pk, [proposals])
-            #
+
         return render(request, 'annotation/index.html', context)
+
 
 @login_required(login_url='/annotation/login/')
 def training(request):
