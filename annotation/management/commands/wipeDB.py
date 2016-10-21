@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.core.management.base import BaseCommand, CommandError
 from annotation.models import Document, Label, Annotation
 from annotation.models import NBC_class_count, NBC_vocabulary, NBC_word_count_given_class

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.core.management.base import BaseCommand, CommandError
 from annotation.models import Document, Label, Annotation
 import json
@@ -12,8 +13,7 @@ class Command(BaseCommand):
         documents = Document.objects.filter(trainInstance=False)
         export = {}
         [export.update({doc.doc_id: {"document": doc.document.encode('utf8'),
-                                     "prediction": doc.active_prediction.label if
-                                     doc.active_prediction else "",
+                                     "prediction": doc.active_prediction.label if doc.active_prediction else "",
                                      "margin": doc.margin,
                                      "annotations": self.getAnnotations(doc)}})
          for doc in documents]

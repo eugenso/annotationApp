@@ -11,7 +11,7 @@
 <form action="/annotation/login/" method="post" accept-charset="utf-8">
   {% csrf_token %}
   {{ form.as_p }}
-  <input type="hidden" name="next" value="/annotation{% url "index" %}">
+  <input type="hidden" name="next" value="{% url "index" %}">
   <input class="btn btn-default" type="submit" value="Login">
 </form>
 

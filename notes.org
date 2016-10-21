@@ -120,7 +120,7 @@ to addDocuments you have to have nltk stuff
 
 +If no annotationQueue exist display something usefull not crap+
 
-check why there are double annoations
++check why there are double annoations+
 
 highlight keywords in text box
 
@@ -131,3 +131,17 @@ highlight keywords in text box
 +If all documents are annotated catch the value error+
 
 +remove http login+
+
++remove django src hack+
+
+* 19.10.2016
+
++remove hard coded links with settings.SUB_SITE placeholder.+
+
++The createAnnotationQueue does not work+
+
+* 21.10.2016
+
+utf-8 error
+
+createLearningCurve not reasonable

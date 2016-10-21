@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """annotationApp URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
@@ -16,6 +17,7 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
+import settings
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),

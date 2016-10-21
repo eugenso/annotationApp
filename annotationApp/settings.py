@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Django settings for annotationApp project.
 
@@ -146,9 +147,9 @@ BASE_URL = 'http://maggie.lt.informatik.tu-darmstadt.de/annotation/'
 USE_X_FORWARDED_HOST = True
 
 
-SUB_SITE = "/annotation"
+SUB_SITE = '/annotation'
 
-FORCE_SCRIPT_NAME = '/annotation'
+FORCE_SCRIPT_NAME = SUB_SITE
 
 logging.basicConfig(
     level = logging.INFO,

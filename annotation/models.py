@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
 from django.db import models
@@ -65,7 +66,7 @@ class Score(models.Model):
     nbc_total = models.FloatField(default=0.0)
     def __str__(self):
         l = self.label.__str__() + ' '
-        d = '' #self.document.__str__() + ' '
+        d = ''#self.document.__str__() + ' '
         n = str(self.nbc_normalized) + ' '
         p = str(self.nbc_prior) + ' '
         tgl = str(self.nbc_term_given_label) + ' '

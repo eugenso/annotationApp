@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from annotation.models import Document, Label, AnnotationQueue, QueueElement
 import annotation.classifier as clf
 
@@ -43,22 +44,20 @@ def uncertainty_sampling(documents, trueLabels):
         return [documents, trueLabels]
 
 
-def selectDocument(user, startSession=False):
+def selectDocument(user):
     queue = AnnotationQueue.objects.filter(user=user).first()
     document = Document(document='YOU HAVE NO MORE DOCUMENTS LEFT TO ANNOTATE. THANK YOU FOR YOUR PARTICIPATION!',
                                 doc_id='',
                                 preprocessed='',
                                 trainInstance=True)
     proposal = None
+    element = None
 
     if queue:
         elements = QueueElement.objects.filter(queue=queue).order_by('rank')
         if elements:
-            if not startSession:
-                elements.first().delete()
-                #
             element = elements.first()
             document = element.document
             proposal = element.proposalFlag
         #
-    return document, proposal
+    return document, proposal, element

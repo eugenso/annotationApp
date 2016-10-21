@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.core.management.base import BaseCommand, CommandError
 
 from annotation.models import Document, Annotation, AnnotationQueue, QueueElement
@@ -24,7 +25,7 @@ class Command(BaseCommand):
         parser.add_argument('no-proposal-freq',
                             nargs='*',
                             type=float,
-                            help='This options expects 3 parameters which represent the frequency of documents that get no proposal, a wrong proposal and full proposal. With the sequence 0.2 0.3 0.5; 20%% of the documents get annotations where <no-proposal-num> of the annotations have no proposal, 30%% of the documents get annotations where <wrong-proposal-num> of the annotations get a wrong proposal and for 50%% of the documents all annotations get proposals. The three numbers have to sum up to one.')
+                            help='This options expects 3 parameters which represent the frequency of documents that get no proposal, a wrong proposal and full proposal. With the sequence 0.2 0.3 0.5; documents have a 20%% chance to get no annotation proposal where <no-proposal-num> of the annotations have no proposal, a 30%% chance to get a wrong annotation proposal where <wrong-proposal-num> of the annotations get a wrong proposal and a 50%% chance to get all proposals. The three numbers have to sum up to one.')
 
     def active_document_queue(self, documents):
         return sel.uncertainty_sampling(documents, range(len(documents)))
@@ -182,6 +183,7 @@ class Command(BaseCommand):
             queueElements = self.createQueueElements(documents,
                                                      options['maxAnno'],
                                                      options)
+            # Delete all existing QueueElement s.
             QueueElement.objects.all().delete()
             print 'Fill database with queue entries for partially annotated documents'
             # fill database with new QueueElements for unfinnished
@@ -196,17 +198,13 @@ class Command(BaseCommand):
                                   proposalFlag=proposal,
                                   rank=rank)
                 qE.save()
-                # print 'Element ' + str(rank) + ': ' + str(document.pk) + ' ' + proposal + ' user: ' + annotator.__str__()
-                #
 
             # calcultate ranks for untouched documents
             print 'Fill database with queue entries for untouched documents'
             for annotator in annotators:
-                # print 'Create queue for user ' + annotator.__str__()
                 userIdx = annotators.index(annotator)
-                for document, proposal in untouchedQueueElements[userIdx::len(annotators)]:
+                for document, proposal in queueElements[userIdx::len(annotators)]:
                     rank += 1
-                    # print 'Element ' + str(rank) + ': ' + str(document.pk) + ' ' + proposal
                     qE = QueueElement(document=document,
                                       queue=queues[annotator],
                                       proposalFlag=proposal,
@@ -216,82 +214,10 @@ class Command(BaseCommand):
                 #
 
 
-
-
-
-
-
-
-
-
-
-
-
 # mock ups
 # documents = Document.objects.all()
 # options = {}
-# options['maxAnno'] = 3
+# options['maxAnno'] = 2
 # options['no-proposal-freq'] = [0.25,0.25,0.5]
 # options['wrong-proposal-num'] = 1
 # options['no-proposal-num'] = 1
-
-
-
-            # # sort the unfinnished documents according to the number
-            # # of missing annotations such that documents that have fewer
-            # # missing annotations are prioritised.
-            # for document, annoNum, users, proposals in sorted(unfinnishedDocuments, key=itemgetter(1)):
-            #     # find potentual annotators. Potentual annotators are
-            #     # those who didn't annotate the current document.
-            #     potAnnotators = list(set(annotators)-set(users))
-            #     potAnnotators = map(lambda pA: (pA, AnnotationQueue.objects.get(user=pA)),
-            #                         potAnnotators)
-            #     # if there are fewer annotators than requested
-            #     # annotations print a warning.
-            #     if annoNum > len(potAnnotators):
-            #         maxAnno_too_big = 'There are not enough annotators to process the remaining unfinnished documents without overlap.'
-            #         warnings.warn(maxAnno_too_big, Warning)
-            #     #
-            #     # randomize the potentual annotators and select as
-            #     # many as there are remaining annotations. Then
-            #     # iterate over them.
-            #     for annotator, queue in random.sample(potAnnotators,
-            #                                           len(potAnnotators))[:annoNum]:
-            #         rank+=1
-            #         queue.max_anno_num = options['maxAnno']
-            #         queue.save()
-            #         qE = QueueElement(document=document,
-            #                           queue=queue,
-            #                           proposalFlag='proposal', # [1]
-            #                           rank=rank)
-
-
-        # #
-        # # filter all documents for non training documents and then
-        # # exclude all documents that already have an annotation.
-        # empty_doc = Document.objects.filter(trainInstance=False).exclude(
-        # id__in=map(lambda a: a.document.pk, Annotation.objects.all()))
-        # # repeat each document <maxAnno> times and store them in one
-        # # list.
-        # doc_queue = list(chain.from_iterable(repeat(x, options['maxAnno'])
-        #                                      for x in empty_doc))
-        # # create a list of lists that only contain False. Each inner
-        # # list contains <maxAnno> - <proposals> elements.
-        # a_lot_of_false = repeat(list(repeat(False,
-        #                                     options['maxAnno']-options['proposals'])),
-        #                         len(empty_doc))
-        # # complement the inner lists with <proposals> Trues.
-        # neat_true_false = map(lambda x: x+list(repeat(True, options['proposals'])),
-        #                       a_lot_of_false)
-        # # randomize the order of the inner lists and flatten the
-        # # entire list. This list might have more elements than
-        # # doc_queue but zipping them together ignores the additional
-        # # elements.
-        # proposals = list(chain(*map(lambda x: sample(x, len(x)), neat_true_false)))
-        # #
-        # queueElements = zip(doc_queue, proposals)
-        # #
-        # for annotator in annotators:
-        #     queue = AnnotationQueue(user=annotator)
-        #     userIdx = annotators.index(annotator)
-        #     for dp in queue[userIdx::len(annotators)]:

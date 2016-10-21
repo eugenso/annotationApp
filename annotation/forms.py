@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django import forms
 from annotation.models import Annotation
 
@@ -22,30 +23,3 @@ class TrainingForm(forms.Form):
                 queryset=labels,
                 required=False,
                 widget=forms.CheckboxSelectMultiple())
-
-
-
-
-
-
-
-
-# LEGACY CODE
-# class AnnotationForm(ModelForm):
-#     class Meta:
-#         model = Annotation
-#         fields = ['labels', 'duration', 'user', 'document']
-#         widgets = {'duration': HiddenInput(),
-#                    'user': HiddenInput(),
-#                    'document': HiddenInput()}
-
-# from django.forms import forms
-# from .models import Annotation
-
-# class AnnotationForm(forms.Form):
-
-#     def __init__(self, *args, **kwargs):
-#         print kwargs.pop('labels',None)
-#         #self.user = kwargs.pop('user',None)
-# #        self.labels = forms.SelectMultiple(choices=kwargs.pop('labels',None))
-#         super(AnnotationForm, self).__init__(*args, **kwargs)

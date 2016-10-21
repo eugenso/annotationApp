@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.core.management.base import BaseCommand, CommandError
 from annotation.models import Document, Label
 from sklearn.metrics import accuracy_score
