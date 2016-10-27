@@ -3,5 +3,5 @@
 *.tsv
 *.json
 *.label
-my.cnf
+*.cnf
 data/
