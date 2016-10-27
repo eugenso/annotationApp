@@ -105,3 +105,10 @@ class Command(BaseCommand):
         self.processSteps(trainDocuments, trainLabels,
                           testDocuments, testLabels,
                           options['split_abs'], options['active'])
+
+# mock ups
+options = {}
+options['trainFile'] = 'data/train.tsv'
+options['testFile'] = 'data/test.tsv'
+options['active'] = True
+options['split_abs'] =

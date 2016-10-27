@@ -96,7 +96,6 @@ mit den daten mach ein batch learner und evaluiere deinen classifier bbau eine l
 perceptron online classifier
 wenn neues label hinzugefügt wird bei TRaining->classify nicht das neue label angezeigt.
 
-
 * 30.09.2016
 
 +implement priority queue for document selection. prioritise documents
@@ -112,7 +111,6 @@ annotation from one annotator.+
 +config for how often do the annotator get no proposal+
 
 +annotator bias regarding the proposed labels.+
-
 
 * 14.10.2016
 
@@ -142,6 +140,58 @@ highlight keywords in text box
 
 * 21.10.2016
 
-utf-8 error
++max 150 words+
+
++keine proposals in der db+
+
++training mode does not work+
+
++doc live classification for proposals+
+
++was passiert wenn die parameter max 0 0 0+
+
+* mögliche evaluationen:
+
+stündliches erstelles der createAnnotaitonQueue und gesamtes test set
+evaluieren. wie hoch ist der anteil der documente für die sich die
+prediction ändert von std 0- std 1
+
+wenn sich die prediction nicht mehr stark ändert kann man die live
+prediction der proposals rausnehmen um den process zu
+beschleunigen. Dann vergleichen zwischen proposal/non-proposal
+
+* 25.10.2016
 
 createLearningCurve not reasonable
+
+timestamp for document when they are being added
+
+** Question?
+When is a document annotated? If its added at the
+beginning(time) and put at the end of the queue. Will it always stay
+at the end? if it is never annotated is the predicted label correct or
+incorrect?
+
+utf-8 error
+
+Solve enter pop up loop
+
+* 26.10.2016
+
+RAM disc erstellen. und innoDB in den RAM myIsam tabellen kann man
+frei kopieren. in mysql den pfand anpassen und in die RAM disc
+schieben. Dann kann man die Annotationen loggen. Das Ausgabeformat in
+dem JSON Format des exports.
+
+Anstatt des foreign keys in nbc_word_given_label_count
+
+
+find out how long it takes to create the queues
+
+projekt in github einchecken und das projekt auf dem dev server laufen
+lassen und auf dem production server die sentiment daten bereit
+stellen.
+
+enable cache on dev server für mysql
+
+evaluate file command

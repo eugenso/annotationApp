@@ -8,6 +8,8 @@ import annotation.active_selection as sel
 import warnings
 import re
 
+import pdb
+
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('trainFile',
@@ -38,8 +40,9 @@ class Command(BaseCommand):
         # raw_labels = ''.join(re.findall(r'\t[\d\-]+?\n',train_content)).replace('\t', '').splitlines()
         raw_labels = ''.join(re.findall(r'(\t[\-1]{1,2})*?\n',train_content)).split('\t')[1:]
         # Get the Labels from the db.
-        relevant = Label.objects.filter(label='relevant').first()
-        irrelevant = Label.objects.filter(label='irrelevant').first()
+        pdb.set_trace()
+        relevant = Label.objects.filter(label='Relevant').first()
+        irrelevant = Label.objects.filter(label='Irrelevant').first()
         # Tranform label representation into the true Labels.
         labels = [relevant if label=='1' else irrelevant
                   for label in raw_labels]
@@ -51,6 +54,8 @@ class Command(BaseCommand):
                                   document_texts[idx])),
                               trainInstance=True)
                      for idx in range(len(document_texts))]
+        for document in documents:
+            document.save()
         rlt = (documents, map(lambda l: [l], labels))
         pprint(map(lambda r: (r[0].document[:20],r[1][0].label),zip(rlt[0], rlt[1])))
         return rlt
@@ -93,7 +98,7 @@ class Command(BaseCommand):
             trainDoc = trainDoc[step:]
             trainLab = trainLab[step:]
             # make predictions
-            preds = [clf.predict(testDocuments[idx])
+            preds = [clf.predict(testDocuments[idx], saveScores=False)
                      for idx in range(len(testDocuments))]
             results = results + [preds]
             #
@@ -133,6 +138,25 @@ class Command(BaseCommand):
             #     raise Exception('--split-abs arguments have to sum up to the number of training examples. In the file "'+options['trainFile']+'" '+str(N)+' training examples were found.')
         else:
             raise Exception('One type of data split has to be entered. Either --split-frac or --split-abs')
+
+
+# mock ups
+# options = {}
+# options['trainFile'] = 'train.tsv'
+# options['testFile'] = 'test.tsv'
+# options['active'] = True
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         # # Divide the training data into learning steps. For N=3300 the

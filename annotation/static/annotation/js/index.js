@@ -21,10 +21,16 @@ window.onload = function(){
 
     if(labels){
         var trigger = function(l){
-            if (l.checked){
-                l.checked = false;
-            } else {
-                l.checked = true;
+            if (l.type == 'radio'){
+                if(!l.checked){
+                    l.checked = true;
+                }
+            }else{
+                if (l.checked){
+                    l.checked = false;
+                } else {
+                    l.checked = true;
+                }
             }
         };
         document.addEventListener("keyup", function(e){
@@ -95,7 +101,7 @@ var btnPause = document.getElementById("btnPause");
 if (btnPause !== null) {
     btnPause.onclick = function() {
         var doc = document.getElementById("document");
-        if (btnPause.innerHTML == "Activate Pause"){
+        if (btnPause.innerHTML == "Pause"){
             labels.map(function(label){
                 label.disabled = true;
             });
@@ -113,7 +119,7 @@ if (btnPause !== null) {
             doc.innerHTML = textBuffer;
             textBuffer = "";
 
-            btnPause.innerHTML = "Activate Pause";
+            btnPause.innerHTML = "Pause";
             totalPause += (new Date() - pause);
         }
     };

@@ -7,6 +7,7 @@ from operator import itemgetter
 
 import logging
 
+
 def uncertainty_sampling(documents, trueLabels):
     # the parameter documents should be straight forward. It's list of
     # documents to be sorted according to minimal margin sampling. The

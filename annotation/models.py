@@ -22,6 +22,7 @@ class Document(models.Model):
     trainInstance = models.BooleanField()
     active_prediction = models.ForeignKey(Label, null=True, blank=True)
     margin = models.FloatField(default=1.0)
+    dateTime =  models.DateTimeField(auto_now_add=True)
     #
     def __str__(self):
         return self.document[:100]
@@ -66,12 +67,12 @@ class Score(models.Model):
     nbc_total = models.FloatField(default=0.0)
     def __str__(self):
         l = self.label.__str__() + ' '
-        d = ''#self.document.__str__() + ' '
+        d = ''#self.document.__str__() + ' ' # does not work returns "'ascii' codec can't decode byte 0xc3 in position 24: ordinal not in range(128)" and I have no more ideas
         n = str(self.nbc_normalized) + ' '
         p = str(self.nbc_prior) + ' '
         tgl = str(self.nbc_term_given_label) + ' '
         t = str(self.nbc_total)
-        return l+d+n+p+tgl+t
+        return 'Label: '+l+d+', nbc_normalized: '+n+', nbc_prior: '+p+', nbc_term_given_label: '+tgl+', nbc_total: '+t
 
 
 @python_2_unicode_compatible
@@ -80,6 +81,7 @@ class Annotation(models.Model):
     user = models.ForeignKey(User)
     labels = models.ManyToManyField(Label)
     proposals = models.ManyToManyField(Label, related_name='proposals')
+    proposalFlag = models.CharField(max_length=15, default='no proposal')
     duration = models.CharField(max_length=100)
     dateTime =  models.DateTimeField(auto_now_add=True)
     #
@@ -88,9 +90,10 @@ class Annotation(models.Model):
         duration = ', duration: ' + str(round(float(self.duration)/100)/10) + ' secs, '
         dateTime = 'on ' + self.dateTime.strftime("%Y-%m-%d %H:%M:%S") + ', '
         labels = 'labels: ' + ', '.join([l.label for l in self.labels.all()]) + ', '
-        proposals = 'proposals: ' + ', '.join([p.label for p in self.proposals.all()])
+        proposals = 'proposals: ' + ', '.join([p.label for p in self.proposals.all()]) + ', '
+        flag = 'flag: ' + self.proposalFlag + ', '
         docs = ', doc: ' + self.document.__str__().decode('utf-8')
-        return user + duration + dateTime + labels + proposals + docs
+        return user + duration + dateTime + labels + proposals + flag + docs
 
 
 @python_2_unicode_compatible

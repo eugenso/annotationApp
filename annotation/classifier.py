@@ -84,7 +84,7 @@ def online_train(document, labels):
     update_word_count(document.preprocessed.split(' '), labels)
 
 
-def predict(document):
+def predict(document, saveScores=True):
     # To predict the label of a document first get the preprocessed
     # version.
     tokens = document.preprocessed.split(' ')
@@ -129,13 +129,14 @@ def predict(document):
         else:
             scores[label]['normalized'] = 0.0
         # save scores to db
-        dbScore, created = Score.objects.get_or_create(document=document,
-                                                       label=c.label)
-        dbScore.nbc_normalized = scores[label]['normalized']
-        dbScore.nbc_prior = scores[label]['prior']
-        dbScore.nbc_term_given_label = scores[label]['term_given_label']
-        dbScore.nbc_total = scores[label]['total']
-        dbScore.save()
+        if saveScores:
+            dbScore, created = Score.objects.get_or_create(document=document,
+                                                           label=c.label)
+            dbScore.nbc_normalized = scores[label]['normalized']
+            dbScore.nbc_prior = scores[label]['prior']
+            dbScore.nbc_term_given_label = scores[label]['term_given_label']
+            dbScore.nbc_total = scores[label]['total']
+            dbScore.save()
     return scores
 
 

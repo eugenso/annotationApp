@@ -1,1 +1,7 @@
-**/*.pyc
+*.pyc
+*.csv
+*.tsv
+*.json
+*.label
+my.cnf
+data/

@@ -18,7 +18,12 @@ import annotation.classifier as clf
 import annotation.active_selection as sel
 import logging
 
-def selectProposal(document, proposalFlag):
+def selectProposal(document, proposalFlag, onlineProposal=False):
+    if onlineProposal:
+        logging.info('Old proposel label: ' + document.active_prediction.__str__())
+        document.active_prediction = clf.predict_label(document)
+        document.save()
+        logging.info('New proposel label: ' + document.active_prediction.__str__())
     if proposalFlag == 'proposal':
         if document.active_prediction:
             proposal = [document.active_prediction.pk]
@@ -52,35 +57,40 @@ def index(request):
             old_doc = Document.objects.get(pk=old_pk)
             annotation = Annotation(document=old_doc,
                                     user=request.user,
-                                    duration=form.data['duration'])
+                                    duration=form.data['duration'],
+                                    proposalFlag=form.data.get('oldProposalFlag'))
 
             annotation.save() # save the annotation to the DB
             #
             annotation.labels.add(*form.cleaned_data['labels'])
-            old_proposals = map(int, re.findall(r'\d+', form.data['old_proposal']))
-            annotation.proposals.add(*old_proposals)
+            oldProposals = map(int, re.findall(r'\d+', form.data['oldProposals']))
+            annotation.proposals.add(*oldProposals)
             #
             clf.online_train(old_doc, form.cleaned_data['labels'])
             # After we trained the newly annotated document, the
             # corresponding QueueElement can be deleted.
-            oldQueueEntry = form.data.get('oldQueueEntry')
-            if oldQueueEntry:
-                QueueElement.objects.get(pk=oldQueueEntry).delete()
-
+            oQE = form.data.get('oldQueueElement')
+            oldQueueElement = QueueElement.objects.filter(pk=oQE).first()
+            if oldQueueElement:
+                oldQueueElement.delete()
+                #
             document, proposalFlag, queueElement = sel.selectDocument(request.user)
-            logging.info('queueElement: ' + str(queueElement))
-            context['proposals'] = selectProposal(document, proposalFlag)
+            proposals = selectProposal(document, proposalFlag, onlineProposal=True)
+            # logging.info('queueElement: ' + str(queueElement))
+            context['proposals'] = proposals
             context['document'] = document
-            context['oldQueueEntry'] = queueElement
+            context['oldQueueElement'] = queueElement
+            context['oldProposalFlag'] = queueElement.proposalFlag
             form = AnnotationForm(labels)
             context['form'] = form
 
             return render(request, 'annotation/index.html', context)
     else:
         document, proposalFlag, queueElement = sel.selectDocument(request.user)
-        context['proposals'] = selectProposal(document, proposalFlag)
+        context['proposals'] = selectProposal(document, proposalFlag, onlineProposal=True)
         context['document'] = document
-        context['oldQueueEntry'] = queueElement
+        context['oldQueueElement'] = queueElement
+        context['oldProposalFlag'] = queueElement.proposalFlag
         form = AnnotationForm(labels)
         context['form'] = form
 
@@ -105,9 +115,9 @@ def training(request):
                                     preprocessed=' '.join(clf.preprocessing(
                                         form.data['trainDocument'])),
                                     trainInstance=True)
-                # only is there is a document and it contains words it
+                # only if there is a document and it contains words it
                 # will be classified
-                scores = clf.predict(document)
+                scores = clf.predict(document, saveScores=False)
                 if scores:
                     context['scores'] = scores
                     proposals = clf.predict_label(document, scores=scores)

@@ -10,6 +10,8 @@ from random import sample, shuffle
 import warnings
 import annotation.active_selection as sel
 import numpy as np
+import logging
+import datetime
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -31,10 +33,10 @@ class Command(BaseCommand):
         return sel.uncertainty_sampling(documents, range(len(documents)))
 
     def createQueueElements(self, documents, maxAnno, options, usersAlreadyAnno=None):
-        if not maxAnno > options['no-proposal-num']:
+        if not maxAnno >= options['no-proposal-num']:
             proposals_too_big = 'The parameter <no-proposal-num> is bigger than the maximum number of annotations set per document.'
             warnings.warn(proposals_too_big, Warning)
-        if not maxAnno > options['wrong-proposal-num']:
+        if not maxAnno >= options['wrong-proposal-num']:
             proposals_too_big = 'The parameter <wrong-proposal-num> is bigger than the maximum number of annotations set per document.'
             warnings.warn(proposals_too_big, Warning)
         frequences = list(np.random.choice(['no proposal', 'wrong proposal', 'proposal'],
@@ -70,6 +72,8 @@ class Command(BaseCommand):
         if sum(options['no-proposal-freq']) != 1 or len(options['no-proposal-freq']) != 3:
             raise Exception('<no-proposal-freq> have to sum up to one and be exactly 3 parameters.')
         if not options['maxAnno'] > options['no-proposal-num']:
+            print "options['maxAnno']: " + options['maxAnno']
+            print "options['no-proposal-num']: " + options['no-proposal-num']
             proposals_too_big = 'The parameter <no-proposal-num> is bigger than <maxAnno>.'
             warnings.warn(proposals_too_big, Warning)
         if not options['maxAnno'] > options['wrong-proposal-num']:
@@ -83,6 +87,8 @@ class Command(BaseCommand):
         #
         annotations = Annotation.objects.all()
 
+        startTime = datetime.datetime.now()
+        print 'Started at ' + startTime.strftime("%Y-%m-%d %H:%M")
         if not annotations:
             documents, trash = self.active_document_queue(Document.objects.all())
 
@@ -168,8 +174,10 @@ class Command(BaseCommand):
             # them in memory is faster then requesting them from the
             # database for every new QueueElement.
             queues = {}
+
             for annotator in annotators:
-                queue = AnnotationQueue.objects.get(user=annotator)
+                queue, created = AnnotationQueue.objects.get_or_create(user=annotator)
+                logging.info(queue)
                 queue.max_anno_num = options['maxAnno']
                 queue.save()
                 queues[annotator] = queue
@@ -212,6 +220,8 @@ class Command(BaseCommand):
                     qE.save()
                     #
                 #
+        endTime = datetime.datetime.now()
+        print 'Ended at ' + endTime + ' and took ' + str(endTime - startTime)
 
 
 # mock ups
