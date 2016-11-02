@@ -42,6 +42,7 @@ def selectProposal(document, proposalFlag, onlineProposal=False):
 
 @login_required(login_url=settings.SUB_SITE+'/login/') #user_login
 def index(request):
+    logging.info(settings.SUB_SITE)
     context = {} # a dict with content used in the template
     labels = Label.objects.all()
     context['labels'] = labels

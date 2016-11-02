@@ -55,10 +55,18 @@
   {% else %}
   <p>Oops, something went wrong. No labels were found.</p>
   {% endif %}
+  {% if document %}
   <input id="old_pk" name="old_pk" type="hidden" value="{{ document.pk }}"></input>
+  {% endif %}
+  {% if proposals %}
   <input id="oldProposals" name="oldProposals" type="hidden" value="{{ proposals }}"></input>
+  {% endif %}
+  {% if oldQueueElement %}
   <input id="oldQueueElement" name="oldQueueElement" type="hidden" value="{{ oldQueueElement.pk }}"></input>
+  {% endif %}
+  {% if oldProposalFlag %}
   <input id="oldProposalFlag" name="oldProposalFlag" type="hidden" value="{{ oldProposalFlag }}"></input>
+  {% endif %}
   <input id="duration" name="duration" type="hidden"></input>
   </br>
   </br>

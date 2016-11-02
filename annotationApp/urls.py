@@ -20,7 +20,7 @@ from django.contrib.auth import views as auth_views
 import settings
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    url(r'^admin/', admin.site.urls, name='annotation_admin'),
     url(r'^login/$', auth_views.login, name='user_login'),
     url(r'^logout/$', auth_views.logout, name='user_logout'),
     url(r'^', include('annotation.urls')),
