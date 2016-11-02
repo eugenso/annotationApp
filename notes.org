@@ -195,3 +195,18 @@ stellen.
 enable cache on dev server für mysql
 
 evaluate file command
+
+
+* 28.10.2016
+
+createAnnotationQueue took 3:17:01
+
+second try createAnnotationQueue took 3:40:13.644073
+
++inlcude a link to a guidelines pdf+
+
+migrate annotaion-dev
+
+RAM disc
+
+learning curve

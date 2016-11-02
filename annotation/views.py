@@ -19,7 +19,7 @@ import annotation.active_selection as sel
 import logging
 
 def selectProposal(document, proposalFlag, onlineProposal=False):
-    if onlineProposal:
+    if onlineProposal and not proposalFlag == None:
         logging.info('Old proposel label: ' + document.active_prediction.__str__())
         document.active_prediction = clf.predict_label(document)
         document.save()
@@ -89,12 +89,23 @@ def index(request):
         document, proposalFlag, queueElement = sel.selectDocument(request.user)
         context['proposals'] = selectProposal(document, proposalFlag, onlineProposal=True)
         context['document'] = document
-        context['oldQueueElement'] = queueElement
-        context['oldProposalFlag'] = queueElement.proposalFlag
+        if queueElement:
+            context['oldQueueElement'] = queueElement
+            context['oldProposalFlag'] = queueElement.proposalFlag
+            #
         form = AnnotationForm(labels)
         context['form'] = form
 
         return render(request, 'annotation/index.html', context)
+
+
+@login_required(login_url=settings.SUB_SITE+'/login/')
+def guidelines(request):
+    with open(settings.STATIC_ROOT+'annotation/guidelines.pdf', 'r') as pdf:
+        response = HttpResponse(pdf.read(), content_type='application/pdf')
+        response['Content-Disposition'] = 'filename=guidelines.pdf'
+        return response
+    pdf.close()
 
 
 @login_required(login_url=settings.SUB_SITE+'/login/')

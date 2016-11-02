@@ -221,7 +221,7 @@ class Command(BaseCommand):
                     #
                 #
         endTime = datetime.datetime.now()
-        print 'Ended at ' + endTime + ' and took ' + str(endTime - startTime)
+        print 'Ended at ' + endTime.strftime("%Y-%m-%d %H:%M") + ' and took ' + str(endTime - startTime)
 
 
 # mock ups

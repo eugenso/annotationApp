@@ -8,7 +8,7 @@
 
 {% block content %}
 
-<form action="/annotation/login/" method="post" accept-charset="utf-8">
+<form action="{% url "user_login" %}" method="post" accept-charset="utf-8">
   {% csrf_token %}
   {{ form.as_p }}
   <input type="hidden" name="next" value="{% url "index" %}">
