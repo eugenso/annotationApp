@@ -20,10 +20,10 @@ import logging
 
 def selectProposal(document, proposalFlag, onlineProposal=False):
     if onlineProposal and not proposalFlag == None:
-        logging.info('Old proposel label: ' + document.active_prediction.__str__())
+        #logging.info('Old proposel label: ' + document.active_prediction.__str__())
         document.active_prediction = clf.predict_label(document)
         document.save()
-        logging.info('New proposel label: ' + document.active_prediction.__str__())
+        #logging.info('New proposel label: ' + document.active_prediction.__str__())
     if proposalFlag == 'proposal':
         if document.active_prediction:
             proposal = [document.active_prediction.pk]
@@ -54,17 +54,22 @@ def index(request):
         # check whether it's valid:
         if form.is_valid():
             # create the new annotation
-            old_pk = int(form.data['old_pk'])
+            old_pk = int(form.data.get('old_pk'))
             old_doc = Document.objects.get(pk=old_pk)
             annotation = Annotation(document=old_doc,
                                     user=request.user,
-                                    duration=form.data['duration'],
+                                    duration=form.data.get('duration'),
                                     proposalFlag=form.data.get('oldProposalFlag'))
 
             annotation.save() # save the annotation to the DB
             #
             annotation.labels.add(*form.cleaned_data['labels'])
-            oldProposals = map(int, re.findall(r'\d+', form.data['oldProposals']))
+            #logging.info('form.data.get(oldProposals) request: ' + str(form.data.get('oldProposals')))
+            oldProposals = form.data.get('oldProposals')
+            if oldProposals:
+                oldProposals = map(int, re.findall(r'\d+', form.data.get('oldProposals')))
+            else:
+                oldProposals = [-1]
             annotation.proposals.add(*oldProposals)
             #
             clf.online_train(old_doc, form.cleaned_data['labels'])
@@ -77,11 +82,12 @@ def index(request):
                 #
             document, proposalFlag, queueElement = sel.selectDocument(request.user)
             proposals = selectProposal(document, proposalFlag, onlineProposal=True)
-            # logging.info('queueElement: ' + str(queueElement))
+            logging.info('queueElement request: ' + str(queueElement))
             context['proposals'] = proposals
             context['document'] = document
-            context['oldQueueElement'] = queueElement
-            context['oldProposalFlag'] = queueElement.proposalFlag
+            if queueElement:
+                context['oldQueueElement'] = queueElement
+                context['oldProposalFlag'] = queueElement.proposalFlag
             form = AnnotationForm(labels)
             context['form'] = form
 
@@ -91,6 +97,7 @@ def index(request):
         context['proposals'] = selectProposal(document, proposalFlag, onlineProposal=True)
         context['document'] = document
         if queueElement:
+            logging.info('queueElement: ' + str(queueElement))
             context['oldQueueElement'] = queueElement
             context['oldProposalFlag'] = queueElement.proposalFlag
             #
