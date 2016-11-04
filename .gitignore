@@ -5,3 +5,4 @@
 *.label
 *.cnf
 data/
+annotation/migration/

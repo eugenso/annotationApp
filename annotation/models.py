@@ -16,9 +16,9 @@ class Label(models.Model):
 
 @python_2_unicode_compatible
 class Document(models.Model):
-    document = models.CharField(max_length=10000)
+    document = models.CharField(max_length=5000)
     doc_id = models.CharField(max_length=1000)
-    preprocessed = models.CharField(max_length=10000)
+    preprocessed = models.CharField(max_length=5000)
     trainInstance = models.BooleanField()
     active_prediction = models.ForeignKey(Label, null=True, blank=True)
     margin = models.FloatField(default=1.0)
