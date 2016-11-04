@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 
 @python_2_unicode_compatible
 class Label(models.Model):
-    label = models.CharField(max_length=100)
+    label = models.CharField(max_length=50)
     option = models.CharField(max_length=5)
     #
     def __str__(self):
@@ -98,20 +98,20 @@ class Annotation(models.Model):
 
 @python_2_unicode_compatible
 class NBC_class_count(models.Model):
-    label = models.ForeignKey(Label)
-    count = models.IntegerField()
-    total_word_count = models.IntegerField()
+    label = models.CharField(max_length=50)
+    count = models.IntegerField(default=1)
+    total_word_count = models.IntegerField(default=0)
     #
     def __str__(self):
         count = 'Class count: ' + str(self.count)
-        label = ' of label: ' + self.label.__str__()
+        label = ' of label: ' + self.label
         words = ' with a total of ' + str(self.total_word_count) + ' words'
         return count + label + words
 
 
 @python_2_unicode_compatible
 class NBC_vocabulary(models.Model):
-    word = models.CharField(max_length=100)
+    word = models.CharField(max_length=50)
     #
     def __str__(self):
         return self.word
@@ -119,10 +119,10 @@ class NBC_vocabulary(models.Model):
 
 @python_2_unicode_compatible
 class NBC_word_count_given_class(models.Model):
-    label = models.ForeignKey(Label)
-    word = models.ForeignKey(NBC_vocabulary) # models.CharField(max_length=100)
-    count = models.IntegerField()
+    label = models.CharField(max_length=50)
+    word = models.CharField(max_length=50) # models.ForeignKey(NBC_vocabulary)
+    count = models.IntegerField(default=1)
     def __str__(self):
-        w = '"' + self.word.__str__() + '"' + ' occured '
+        w = '"' + self.word + '"' + ' occured '
         c = str(self.count) + ' times in class '
-        return w + c + self.label.__str__()
+        return w + c + self.label

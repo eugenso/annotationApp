@@ -129,10 +129,10 @@ def training(request):
             # (classifySubmit) or the train button (trainSubmit) was
             # pressed diffent actions are performed
             if 'classifySubmit' in form.data:
-                document = Document(document=form.data['trainDocument'],
+                document = Document(document=form.data.get('trainDocument'),
                                     doc_id='doc to be classified',
                                     preprocessed=' '.join(clf.preprocessing(
-                                        form.data['trainDocument'])),
+                                        form.data.get('trainDocument'))),
                                     trainInstance=True)
                 # only if there is a document and it contains words it
                 # will be classified
@@ -149,10 +149,10 @@ def training(request):
                     context['classifiedDocument'] = document.document
 
             else:
-                document = Document(document=form.data['trainDocument'],
+                document = Document(document=form.data.get('trainDocument'),
                                     doc_id=str(datetime.datetime.now()),
                                     preprocessed=' '.join(clf.preprocessing(
-                                        form.data['trainDocument'])),
+                                        form.data.get('trainDocument'))),
                                     trainInstance=True)
                 document.save()
                 annotation = Annotation(document=document,

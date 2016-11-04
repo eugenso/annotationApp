@@ -13,15 +13,15 @@ import numpy as np
 import re
 import sys
 
+import pdb
+
 def update_class_count(labels):
     # This function updates the counts for the class prior. If there
     # are existing class count objects, their counts are being
     # updated. Otherwise the objects are initialized with 0.
-    if not NBC_class_count.objects.all():
-        [NBC_class_count(label=label, count=0, total_word_count=0).save()
-         for label in Label.objects.all()]
-    for label in labels:
-        for cc in NBC_class_count.objects.filter(label=label):
+    for label in map(lambda l: l.label, labels):
+        cc, created = NBC_class_count.objects.get_or_create(label=label)
+        if not created:
             cc.count = cc.count +1
             cc.save()
 
@@ -31,22 +31,14 @@ def update_word_count(tokens, labels):
     # this function counts how often each term occurs in each class of
     # the training document.
     for token in tokens:
-        for label in labels:
-            vocab = NBC_vocabulary.objects.filter(word=token).first()
-            if vocab:
-                wcgc = NBC_word_count_given_class.objects.filter(
-                    word=vocab, label=label).first()
-                if wcgc:
-                    wcgc.count = wcgc.count +1
-                    wcgc.save()
-                else:
-                    NBC_word_count_given_class(
-                        label=label, word=vocab, count=1).save()
-            else:
-                vocab = NBC_vocabulary(word=token)
-                vocab.save()
-                NBC_word_count_given_class(
-                    label=label, word=vocab, count=1).save()
+        for label in map(lambda l: l.label, labels):
+            vocab, created_vocab = NBC_vocabulary.objects.get_or_create(word=token)
+            wcgc, created_wcgc = NBC_word_count_given_class.objects.get_or_create(
+                    word=token, label=label)
+            if not created_wcgc:
+                wcgc.count = wcgc.count +1
+                wcgc.save()
+                #
             cc = NBC_class_count.objects.filter(label=label).first()
             cc.total_word_count = cc.total_word_count +1
             cc.save()
@@ -54,7 +46,6 @@ def update_word_count(tokens, labels):
 
 def relative_term_freq(token, label):
     # Conditional probability P(term|class)
-    vocabulary = NBC_vocabulary.objects.all()
     vocab = NBC_vocabulary.objects.filter(word=token).first()
     if vocab:
         wcgc = NBC_word_count_given_class.objects.filter(
@@ -67,7 +58,7 @@ def relative_term_freq(token, label):
         Tct = 0
         #
     Tct_sum = NBC_class_count.objects.filter(
-        label=label).first().total_word_count + vocabulary.count()
+        label=label).first().total_word_count + NBC_vocabulary.objects.all().count()
     return (Tct + 1) / Tct_sum
 
 
@@ -115,15 +106,15 @@ def predict(document, saveScores=True):
         #
     # ask eugen again
     for c in NBC_class_count.objects.all():
-        label = c.label.__str__()
+        label = c.label
         scores[label]['normalized'] = np.power(scores[label]['total'], 1/(len(tokens)+1))
     # normalize
     total_sum = 0
     for c in NBC_class_count.objects.all():
-        label = c.label.__str__()
+        label = c.label
         total_sum += scores[label]['normalized']
     for c in NBC_class_count.objects.all():
-        label = c.label.__str__()
+        label = c.label
         if scores[label]['normalized'] != 0:
             scores[label]['normalized'] = scores[label]['normalized'] / total_sum
         else:
@@ -131,7 +122,7 @@ def predict(document, saveScores=True):
         # save scores to db
         if saveScores:
             dbScore, created = Score.objects.get_or_create(document=document,
-                                                           label=c.label)
+                                                           label=Label.objects.filter(label=c.label).first())
             dbScore.nbc_normalized = scores[label]['normalized']
             dbScore.nbc_prior = scores[label]['prior']
             dbScore.nbc_term_given_label = scores[label]['term_given_label']
