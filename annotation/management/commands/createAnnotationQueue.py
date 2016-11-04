@@ -177,7 +177,6 @@ class Command(BaseCommand):
 
             for annotator in annotators:
                 queue, created = AnnotationQueue.objects.get_or_create(user=annotator)
-                logging.info(queue)
                 queue.max_anno_num = options['maxAnno']
                 queue.save()
                 queues[annotator] = queue

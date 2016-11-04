@@ -35,9 +35,7 @@ def uncertainty_sampling(documents, trueLabels):
             document, trueLabel, margin, predLabel = dm
             doc = Document.objects.get(pk=document.pk)
             doc.active_prediction = predLabel
-            logging.info('doc.active_prediction: '+str(doc.active_prediction))
             doc.margin = margin
-            logging.info('doc.margin: '+str(doc.margin))
             doc.save()
         # unzip the margins from the documents and return the documents
         return zip(*doc_margin)[:2]

@@ -42,13 +42,11 @@ def selectProposal(document, proposalFlag, onlineProposal=False):
 
 @login_required(login_url=settings.SUB_SITE+'/login/') #user_login
 def index(request):
-    logging.info(settings.SUB_SITE)
     context = {} # a dict with content used in the template
     labels = Label.objects.all()
     context['labels'] = labels
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
-        logging.info(request.POST)
         # create a form instance and populate it with data from the request:
         form = AnnotationForm(labels, request.POST)
         # check whether it's valid:
@@ -82,7 +80,6 @@ def index(request):
                 #
             document, proposalFlag, queueElement = sel.selectDocument(request.user)
             proposals = selectProposal(document, proposalFlag, onlineProposal=True)
-            logging.info('queueElement request: ' + str(queueElement))
             context['proposals'] = proposals
             context['document'] = document
             if queueElement:
@@ -97,7 +94,6 @@ def index(request):
         context['proposals'] = selectProposal(document, proposalFlag, onlineProposal=True)
         context['document'] = document
         if queueElement:
-            logging.info('queueElement: ' + str(queueElement))
             context['oldQueueElement'] = queueElement
             context['oldProposalFlag'] = queueElement.proposalFlag
             #
