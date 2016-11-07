@@ -24,7 +24,7 @@ class Command(BaseCommand):
             newAnnoNum = Annotation.objects.all().count()
             if oldAnnoNum != newAnnoNum:
                 with open(registerName, 'w') as register:
-                    output = 'Annotations:' + newAnnoNum
-                    output += 'Runs:' + runs+1
-                    register.write(newAnnoNum)
+                    output = 'Annotations:' + str(newAnnoNum) + '\n'
+                    output += 'Runs:' + str(runs+1)
+                    register.write(output)
                 call_command('createAnnotationQueue', '3', '1', '1', '0.2', '0.2', '0.6')
