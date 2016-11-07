@@ -14,7 +14,7 @@ from itertools import chain, repeat, groupby
 from operator import itemgetter
 from random import sample, shuffle
 
-
+from django.conf import settings
 from sklearn.metrics import confusion_matrix, accuracy_score
 import re
 import numpy as np

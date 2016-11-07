@@ -9,16 +9,22 @@ import os
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        registerName = settings.BASE_DIR + 'annotationRegister.csv'
+        registerName = settings.BASE_DIR + '/annotationRegister.csv'
         if not os.path.isfile(registerName):
             with open(registerName, 'w') as register:
-                register.write(str(Annotation.objects.all().count()))
+                output = 'Annotations:' + str(Annotation.objects.all().count()) + '\n'
+                output += 'Runs:0'
+                register.write(output)
         else:
             oldAnnoNum = 0
             with open(registerName, 'r') as register:
-                oldAnnoNum = int(register.read())
+                content = register.readlines()
+                oldAnnoNum = int(content[0].split(':')[1])
+                runs = int(content[1].split(':')[1])
             newAnnoNum = Annotation.objects.all().count()
             if oldAnnoNum != newAnnoNum:
                 with open(registerName, 'w') as register:
+                    output = 'Annotations:' + newAnnoNum
+                    output += 'Runs:' + runs+1
                     register.write(newAnnoNum)
                 call_command('createAnnotationQueue', '3', '1', '1', '0.2', '0.2', '0.6')
