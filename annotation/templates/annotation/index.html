@@ -35,7 +35,7 @@
 <p>Oops, something went wrong. No documents were found.</p>
 {% endif %}
 
-<form action="/annotation/" method="post" id="annotation-form" onsubmit="return measureUserTime();">
+<form action="{% url "index" %}" method="post" id="annotation-form" onsubmit="return measureUserTime();"> <!-- /annotation/ -->
   {% csrf_token %}
   {% if labels %}
   {% for label in labels %}
