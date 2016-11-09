@@ -28,3 +28,4 @@ class Command(BaseCommand):
                     output += 'Runs:' + str(runs+1)
                     register.write(output)
                 call_command('createAnnotationQueue', '3', '1', '1', '0.2', '0.2', '0.6')
+                call_command('exportAnnotation', 'export', '--incremental')
