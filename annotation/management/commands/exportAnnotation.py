@@ -49,7 +49,9 @@ class Command(BaseCommand):
 
 
     def exportAnnotation(self, annotations, options):
-        documents = set(map(lambda a:a.document, annotations))
+        documents = set([annotation.document
+                         for annotation in annotations
+                         if annotation.document.trainInstance == False])
         export = {}
         for document in documents:
             if document.active_prediction:
@@ -58,9 +60,10 @@ class Command(BaseCommand):
                 active_prediction = ''
             export.update({document.doc_id: {"scores": self.getScore(document),
                                              "annotations": self.getAnnotation(document, annotations),
+                                             "document": document.document,
                                              "active_prediction": active_prediction,
                                              "dateTime": document.dateTime.strftime("%Y-%m-%d %H:%M:%S"),
-                                             "magin": document.margin
+                                             "margin": document.margin
                                              }})
         exportName = options['filename']
         if options['incremental']:

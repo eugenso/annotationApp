@@ -7,6 +7,8 @@ import csv
 import sys
 import os
 
+#import pdb
+
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('source',

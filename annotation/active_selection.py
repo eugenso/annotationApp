@@ -6,24 +6,26 @@ from random import sample
 from operator import itemgetter
 
 import logging
+import pdb
 
 
-def uncertainty_sampling(documents, trueLabels):
+def uncertainty_sampling(documents, trueLabels, saveScores=True):
     # the parameter documents should be straight forward. It's list of
     # documents to be sorted according to minimal margin sampling. The
     # parameter trueLabels is added for convenience as association between
     # documents and trueLabels usually is realised via the order in a
     # list.
-    if clf.predict(documents[0]):
+    if documents and clf.predict(documents[0], saveScores):
         # predict the scores for all documents
-        pred_scores = map(clf.predict, documents)
+        pred_scores = map(lambda d: clf.predict(d, saveScores), documents)
         # for every document sort the scores of all trueLabels
         sorted_scores = map(lambda score:
                             sorted(map(lambda val: val['normalized'],
                                        score.values()), reverse=True),
                             pred_scores)
         # calculate the margin between the two most likely trueLabels
-        pred_margin = map(lambda scores: scores[0]-scores[1], sorted_scores)
+        margin = lambda scores: scores[0]-scores[1] if len(scores) > 1 else scores[0]
+        pred_margin = map(margin, sorted_scores)
         # associate the margins with their respective documents and sort
         # them
         doc_margin = sorted(zip(documents, trueLabels, pred_margin,
@@ -31,12 +33,13 @@ def uncertainty_sampling(documents, trueLabels):
                                     pred_scores)),
                             key=itemgetter(2))
         # write results to db
-        for dm in doc_margin:
-            document, trueLabel, margin, predLabel = dm
-            doc = Document.objects.get(pk=document.pk)
-            doc.active_prediction = predLabel
-            doc.margin = margin
-            doc.save()
+        if saveScores:
+            for dm in doc_margin:
+                document, trueLabel, margin, predLabel = dm
+                doc, created = Document.objects.get_or_create(pk=document.pk)
+                doc.active_prediction = predLabel
+                doc.margin = margin
+                doc.save()
         # unzip the margins from the documents and return the documents
         return zip(*doc_margin)[:2]
     else:

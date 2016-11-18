@@ -41,7 +41,7 @@ class Command(BaseCommand):
             warnings.warn(proposals_too_big, Warning)
         frequences = list(np.random.choice(['no proposal', 'wrong proposal', 'proposal'],
                                            len(documents),
-                                           options['no-proposal-freq']))
+                                           p=options['no-proposal-freq']))
         proposals = []
         wrong = ['wrong proposal']*options['wrong-proposal-num']
         wrong += ['proposal']*(maxAnno-options['wrong-proposal-num'])

@@ -25,7 +25,13 @@ class Document(models.Model):
     dateTime =  models.DateTimeField(auto_now_add=True)
     #
     def __str__(self):
-        return self.document[:100]
+        t = str(self.trainInstance)
+        if self.active_prediction:
+            ap = self.active_prediction.label
+        else:
+            ap = ''
+        m = str(self.margin)
+        return self.document[:50] +'/'+ t +'/'+ ap +'/'+ m
 
 
 @python_2_unicode_compatible
@@ -49,10 +55,11 @@ class QueueElement(models.Model):
     proposalFlag = models.CharField(max_length=15, default='no proposal')
     rank = models.IntegerField(default=0)
     def __str__(self):
-        doc = str(self.document.pk)
+        pk = str(self.document.pk)
+        #doc = self.document.document[:50]
         proposal = self.proposalFlag
         rank = str(self.rank)
-        return rank + '/' + doc + '/' + proposal + ','
+        return rank + '/' + pk + '/' + proposal + '/' #+ doc + ','
 
 
 @python_2_unicode_compatible
@@ -67,12 +74,12 @@ class Score(models.Model):
     nbc_total = models.FloatField(default=0.0)
     def __str__(self):
         l = self.label.__str__() + ' '
-        d = ''#self.document.__str__() + ' ' # does not work returns "'ascii' codec can't decode byte 0xc3 in position 24: ordinal not in range(128)" and I have no more ideas
+        d = self.document.document[:50] + ' ' # does not work returns "'ascii' codec can't decode byte 0xc3 in position 24: ordinal not in range(128)" and I have no more ideas
         n = str(self.nbc_normalized) + ' '
         p = str(self.nbc_prior) + ' '
         tgl = str(self.nbc_term_given_label) + ' '
         t = str(self.nbc_total)
-        return 'Label: '+l+d+', nbc_normalized: '+n+', nbc_prior: '+p+', nbc_term_given_label: '+tgl+', nbc_total: '+t
+        return d+'/'+l+'/nbc_normalized: '+n+'/nbc_prior: '+p+'/nbc_term_given_label: '+tgl+'/nbc_total: '+t
 
 
 @python_2_unicode_compatible
