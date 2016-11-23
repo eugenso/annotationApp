@@ -7,7 +7,7 @@ from django.db.models import F, FloatField, Sum, IntegerField
 
 from nltk import word_tokenize
 from math import log, exp
-from operator import itemgetter
+from operator import itemgetter, attrgetter
 from pprint import pprint
 import numpy as np
 import re
@@ -33,8 +33,17 @@ def update_word_count(tokens, labels):
     for token in tokens:
         for label in map(lambda l: l.label, labels):
             vocab, created_vocab = NBC_vocabulary.objects.get_or_create(word=token)
-            wcgc, created_wcgc = NBC_word_count_given_class.objects.get_or_create(
+            try:
+                wcgc, created_wcgc = NBC_word_count_given_class.objects.get_or_create(
                     word=token, label=label)
+            except:
+                duplicates = NBC_word_count_given_class.objects.filter(word=token, label=label)
+                count = sum(map(attrgetter('count'), duplicates))
+                duplicates.delete()
+                wcgc = NBC_word_count_given_class(word=token, label=label)
+                wcgc.count = count
+                wcgc.save()
+                #
             if not created_wcgc:
                 wcgc.count = wcgc.count +1
                 wcgc.save()

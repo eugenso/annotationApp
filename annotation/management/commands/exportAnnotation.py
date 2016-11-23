@@ -56,16 +56,17 @@ class Command(BaseCommand):
                 active_prediction = document.active_prediction.label
             else:
                 active_prediction = ''
-            export.update({document.doc_id: {"scores": self.getScore(document),
+            export.update({document.doc_id: {"document": document.document,
+                                             "scores": self.getScore(document),
                                              "annotations": self.getAnnotation(document, annotations),
                                              "active_prediction": active_prediction,
                                              "dateTime": document.dateTime.strftime("%Y-%m-%d %H:%M:%S"),
-                                             "magin": document.margin
+                                             "margin": document.margin
                                              }})
         exportName = options['filename']
         if options['incremental']:
             exportName += '_' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        exportName += '.json'
+        exportName = settings.BASE_DIR +'/'+ exportName + '.json'
         #
         jsonExport = json.dumps(export, indent=4)
         with open(exportName, 'w') as exportFile:
