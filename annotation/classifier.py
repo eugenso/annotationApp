@@ -32,7 +32,13 @@ def update_word_count(tokens, labels):
     # the training document.
     for token in tokens:
         for label in map(lambda l: l.label, labels):
-            vocab, created_vocab = NBC_vocabulary.objects.get_or_create(word=token)
+            try:
+                vocab, created_vocab = NBC_vocabulary.objects.get_or_create(word=token)
+            except:
+                duplicates = NBC_vocabulary.objects.filter(word=token)
+                duplicates.delete()
+                wcgc = NBC_vocabulary(word=token)
+                wcgc.save()
             try:
                 wcgc, created_wcgc = NBC_word_count_given_class.objects.get_or_create(
                     word=token, label=label)
