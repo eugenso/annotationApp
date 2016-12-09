@@ -196,7 +196,6 @@ enable cache on dev server für mysql
 
 evaluate file command
 
-
 * 28.10.2016
 
 createAnnotationQueue took 3:17:01
@@ -210,3 +209,28 @@ second try createAnnotationQueue took 3:40:13.644073
 RAM disc
 
 learning curve
+* 06.12.2016
+
++cmd line tool number of documents without annotation and partially annotated.+
+
++confusion matrix for real annotations+
+
+export ID \t Document \t label
+
+* 09.12.2016
+
+clean cmd for documents with more then maxAnno annotations.
+
+20 docs + annos for every class (1 distinct label, 2, 3)
+
+label metric
+
+dont fit a gaussian! use pearson dist
+
+
+
+add all 31 documents to production
+
+/srv/data/DB_Sentiment/documents/csv
+
+ls *|grep '031'

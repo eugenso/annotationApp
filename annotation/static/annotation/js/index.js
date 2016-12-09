@@ -84,7 +84,43 @@ window.onload = function(){
                     break;
                 }}}, false);}
     startTime = new Date();
+    var sessionDiv = document.getElementById("sessionDiv");
+    if (sessionDiv){
+        var raw = sessionDiv.getAttribute("value").split('@');
+        var numOfDoc = raw[1];
+        // update input tag
+        document.getElementById("sessionStart").setAttribute(
+            "value", raw[0] +'@'+ (parseInt(numOfDoc)+1).toString());
+        var prefix = "";
+        if (numOfDoc == 1){
+            prefix = numOfDoc.toString() +' Document / ';
+        } else {
+            prefix = numOfDoc.toString() +' Documents / ';
+        }
+        displayClock(prefix);
+    } else {
+        document.getElementById("sessionStart").setAttribute(
+            "value", new Date().toUTCString()+'@1');
+    }
 };
+
+function checkTime(i) {
+    if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
+    return i;
+}
+
+function displayClock(prefix){
+    startDate = new Date(document.getElementById("sessionDiv").getAttribute("value").split('@')[0]);
+    var current = new Date();
+    var passed = new Date(current - startDate);
+    var h = passed.getHours()-1;
+    var m = passed.getMinutes();
+    var s = passed.getSeconds();
+    m = checkTime(m);
+    s = checkTime(s);
+    document.getElementById("sessionDiv").innerHTML = prefix + h + ":" + m + ":" + s;
+    var t = setTimeout(function(){displayClock(prefix);}, 500);
+}
 
 function measureUserTime() {
     if (!labels.reduce(function(r, l){return r || l.checked;}, false)){
@@ -101,6 +137,7 @@ var btnPause = document.getElementById("btnPause");
 if (btnPause !== null) {
     btnPause.onclick = function() {
         var doc = document.getElementById("document");
+        var sessionDiv = document.getElementById("sessionDiv");
         if (btnPause.innerHTML == "Pause"){
             labels.map(function(label){
                 label.disabled = true;
@@ -108,6 +145,10 @@ if (btnPause !== null) {
             document.getElementById("btnSubmit").disabled = true;
             textBuffer = doc.innerHTML;
             doc.innerHTML = "";
+
+            if(sessionDiv){
+                sessionDiv.hidden = true;
+            }
 
             btnPause.innerHTML = "Resume";
             pause = new Date();
@@ -118,6 +159,21 @@ if (btnPause !== null) {
             document.getElementById("btnSubmit").disabled = false;
             doc.innerHTML = textBuffer;
             textBuffer = "";
+
+            // var sessionStart = document.getElementById("sessionStart");
+            // var raw = sessionStart.getAttribute("value").split('@');
+            // var numOfDoc = raw[1];
+            // var oldStartDate = new Date(raw[0]);
+            // var diff = pause - oldStartDate;
+            // var newStartDate = new Date();
+            // newStartDate.setTime(oldStartDate.getTime()+diff)
+            // var newValue = newStartDate.toUTCString() + '@' + numOfDoc;
+            // sessionStart.setAttribute("value", newValue);
+            // document.getElementById("sessionDiv").setAttribute("value", newValue);
+
+            if(sessionDiv){
+                sessionDiv.hidden = false;
+            }
 
             btnPause.innerHTML = "Pause";
             totalPause += (new Date() - pause);

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.core.management.base import BaseCommand, CommandError
 from annotation.models import Document, Label, Annotation, QueueElement, Score
+from itertools import groupby
+from operator import itemgetter
 from collections import Counter
 from django.conf import settings
 import datetime
@@ -15,7 +17,11 @@ class Command(BaseCommand):
         parser.add_argument('--incremental',
                             dest='incremental',
                             action='store_true')
+        parser.add_argument('--tsv',
+                            dest='tsv',
+                            action='store_true')
         parser.set_defaults(incremental=False)
+        parser.set_defaults(tsv=False)
 
 
     def getScore(self, document):
@@ -106,6 +112,20 @@ class Command(BaseCommand):
                     registerOutput += str(pk) + '\n'
                 with open(registerName, 'a') as register:
                     register.write(registerOutput)
+                    #
+            elif options['tsv']:
+                annotations = Annotation.objects.all()
+                key = itemgetter(0)
+                annoPerDoc = [(doc.doc_id.replace('\t', ''),
+                               doc.document.replace('\t', ''),
+                               '\t'.join(map(lambda (d, a): a.labels.all()[0].label, annos)))
+                               for doc, annos
+                              in groupby(sorted(map(lambda a: (a.document, a),
+                                                    annotations), key=key),key=key)]
+                exportName = settings.BASE_DIR +'/'+ options['filename'] + '.tsv'
+                export = '\n'.join(map(lambda tpl: '\t'.join(tpl), annoPerDoc))
+                with open(exportName, 'w') as exportFile:
+                    exportFile.write(export.encode('utf-8'))
             else:
                 # This branch exports all existing annotations
                 self.exportAnnotation(annotations, options)

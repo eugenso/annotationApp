@@ -82,6 +82,7 @@ def index(request):
             proposals = selectProposal(document, proposalFlag, onlineProposal=True)
             context['proposals'] = proposals
             context['document'] = document
+            context['sessionStart'] = form.data['sessionStart']
             if queueElement:
                 context['oldQueueElement'] = queueElement
                 context['oldProposalFlag'] = queueElement.proposalFlag

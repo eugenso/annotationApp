@@ -11,7 +11,7 @@ from django.utils.encoding import python_2_unicode_compatible
 
 import annotation.classifier as clf
 from itertools import chain, repeat, groupby
-from operator import itemgetter
+from operator import itemgetter, attrgetter
 from random import sample, shuffle
 
 from django.conf import settings

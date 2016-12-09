@@ -31,7 +31,8 @@ class Document(models.Model):
         else:
             ap = ''
         m = str(self.margin)
-        return self.document[:50] +'/'+ t +'/'+ ap +'/'+ m
+        id = str(self.pk)
+        return self.document[:50] +'/'+ t +'/'+ ap +'/'+ m +'/'+ id
 
 
 @python_2_unicode_compatible

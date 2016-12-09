@@ -4,9 +4,36 @@
 {% block title %}Annotate!{% endblock %}
 
 {% block heading %}
-<h1>Annotate! <button class="btn btn-info"
-                      id="btnPause"
-                      data-onstyle="primary">Pause</button></h1>
+
+<!-- <div class="row"> -->
+<!-- <h1 class="col-md-4">Annotate! -->
+<!--   <button class="btn btn-info" -->
+<!--           id="btnPause" -->
+<!--           data-onstyle="primary">Pause</button> -->
+<!-- </h1> -->
+<!-- <div class="col-md-4"></div> -->
+<!-- <div class="col-md-4"> -->
+<!--   {% if sessionStart %} -->
+<!--   <div id="sessionDiv" value="{{ sessionStart }}" class="text-right"></div> -->
+<!--   {% endif %} -->
+<!-- </div> -->
+<!-- </div> -->
+
+<h1>
+  <div class="row">
+    <div class="col-md-6">Annotate!
+      <button class="btn btn-info"
+              id="btnPause"
+              data-onstyle="primary">Pause</button>
+    </div>
+    <div class="col-md-6">
+      {% if sessionStart %}
+      <div id="sessionDiv" value="{{ sessionStart }}" class="text-right"></div>
+      {% endif %}
+    </div>
+  </div>
+</h1>
+
 {% endblock %}
 
 {% block content %}
@@ -19,8 +46,6 @@
 <!--     <button class="btn btn-secondary" type="button">Add</button> -->
 <!--   </span> -->
 <!-- </div> -->
-
-</br>
 
 {% if document %}
 <p>
@@ -35,7 +60,7 @@
 <p>Oops, something went wrong. No documents were found.</p>
 {% endif %}
 
-<form action="{% url "index" %}" method="post" id="annotation-form" onsubmit="return measureUserTime();"> <!-- /annotation/ -->
+<form action="{% url "index" %}" method="post" id="annotation-form" onsubmit="return measureUserTime();">
   {% csrf_token %}
   {% if labels %}
   {% for label in labels %}
@@ -66,6 +91,7 @@
   <input id="oldProposalFlag" name="oldProposalFlag" type="hidden" value="{{ oldProposalFlag }}"></input>
   {% endif %}
   <input id="duration" name="duration" type="hidden"></input>
+  <input id="sessionStart" name="sessionStart" type="hidden"></input>
   </br>
   </br>
   <input id="btnSubmit" type="submit" class="save btn btn-default" value="Submit" /></input>
