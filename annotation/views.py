@@ -8,6 +8,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import loader
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.views.decorators.cache import cache_page
 from django.conf import settings
 from random import sample
 
@@ -17,6 +18,8 @@ from annotation.forms import AnnotationForm, TrainingForm
 import annotation.classifier as clf
 import annotation.active_selection as sel
 import logging
+
+from django.db import connection
 
 def selectProposal(document, proposalFlag, onlineProposal=False):
     if onlineProposal and not proposalFlag == None:
@@ -40,6 +43,7 @@ def selectProposal(document, proposalFlag, onlineProposal=False):
         proposal = []
     return proposal
 
+@cache_page(60 * 15)
 @login_required(login_url=settings.SUB_SITE+'/login/') #user_login
 def index(request):
     context = {} # a dict with content used in the template
@@ -89,6 +93,8 @@ def index(request):
             form = AnnotationForm(labels)
             context['form'] = form
 
+            #queries = connection.queries
+            #print 'len: {}, connection: {}'.format(str(len(queries)),  str(filter(lambda q: True if q['time'] != '0.000' else False, queries)))
             return render(request, 'annotation/index.html', context)
     else:
         document, proposalFlag, queueElement = sel.selectDocument(request.user)

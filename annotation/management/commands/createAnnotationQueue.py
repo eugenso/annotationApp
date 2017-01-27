@@ -85,7 +85,7 @@ class Command(BaseCommand):
             maxAnno_too_big = 'The parameter <maxAnno> is bigger than the total number of annotators.'
             warnings.warn(maxAnno_too_big, Warning)
         #
-        annotations = Annotation.objects.all()
+        annotations = list(Annotation.objects.all())
 
         startTime = datetime.datetime.now()
         print 'Started at ' + startTime.strftime("%Y-%m-%d %H:%M")

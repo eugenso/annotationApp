@@ -28,6 +28,9 @@ class Command(BaseCommand):
         parser.add_argument('delimiter',
                             type=str,
                             help='Delimiter used in the .csv file')
+        parser.add_argument('rep',
+                            type=int,
+                            help='Repititions for each learning step')
         parser.add_argument('split',
                             nargs='*',
                             type=int,
@@ -131,7 +134,7 @@ class Command(BaseCommand):
         trainDocs, trainLabels = self.objectTransformation(trainTexts, trainClasses, labelMap)
         testDocs, testLabels = self.objectTransformation(testTexts, testClasses, labelMap)
 
-        runs = 10
+        runs = options['rep']
 
         if trainDocs and trainLabels and testDocs and testLabels:
             trainSetSum = len(trainDocs)

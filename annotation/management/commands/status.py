@@ -34,7 +34,7 @@ class Command(BaseCommand):
               filter(lambda t: True if t[0] and t[1] else False,
                      map(lambda a: (map(attrgetter('label'), a.labels.all()),
                                     map(attrgetter('label'), a.proposals.all())),
-                         Annotation.objects.filter(proposalFlag='proposal')))]
+                         list(Annotation.objects.filter(proposalFlag='proposal'))))]
         confM = dict((true, dict((pred, len(list(l)))
                                  for pred, l
                                  in groupby(sorted(v, key=itemgetter(1)), key=itemgetter(1))))
@@ -62,9 +62,9 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
-        annotations = Annotation.objects.all()
+        annotations = list(Annotation.objects.all())
         documentCount = Document.objects.all().count()
-        annotationCount = annotations.count()
+        annotationCount = len(annotations)
         docCol = len(str(documentCount))
         annoCol = len(str(annotationCount))
         key = itemgetter(0)
@@ -77,6 +77,11 @@ class Command(BaseCommand):
         print 'Documents:'
         print ' There are currently a total of {:{}} documents and {:{}} annotations'.format(
             documentCount, docCol, annotationCount, annoCol)
+        print ' {:>{}} document{} with {:>{}} annotation{}'.format(
+            documentCount-len(annoPerDoc), docCol,
+            's',
+            0, annoCol,
+            '')
         for numOfAnnotations, documents in groupby(sorted(map(lambda (d, a):
                                                               len(a), annoPerDoc))):
             docCount = len(list(documents))
@@ -87,11 +92,14 @@ class Command(BaseCommand):
                 ' ' if numOfAnnotations == 1 else 's')
         print ''
         print 'Annotators:'
-        userAnno = map(lambda a: (a.user.username, a), annotations)
-        userCol = len(max(map(key, userAnno)))
-        for name, annotations in groupby(sorted(userAnno, key=key), key=key):
+        userAnnoGroups = dict((user, list(annotation)) for user, annotation
+                          in groupby(sorted(annotations,
+                                            key=lambda a: a.user.username),
+                                     key=attrgetter('user')))
+        userCol = max(map(lambda u: len(u.username), userAnnoGroups.keys()))
+        for name, annotation in userAnnoGroups.iteritems():
             print ' {:<{}} created {:>{}} annotations.'.format(
-                name, userCol, len(list(annotations)), annoCol)
+                name, userCol, len(annotation), annoCol)
         #
         maxAnno = options['maxAnno'] # number of annotations per document
         labelsPerDocDist = filter(lambda fd: True if sum(fd.values())==maxAnno else False,
@@ -118,7 +126,7 @@ class Command(BaseCommand):
         wordCount = NBC_vocabulary.objects.all().count()
         wordCol = len(str(wordCount))
         print ' The vocabulary consists of {:{}} words.'.format(wordCount, wordCol)
-        for cc in NBC_class_count.objects.all():
+        for cc in list(NBC_class_count.objects.all()):
             s = ' The label {:<{}} occured {:>{}} times with a total of {:>{}} words'
             print s.format(cc.label, labelWidth, cc.count, wordCol, cc.total_word_count, wordCol)
             #
