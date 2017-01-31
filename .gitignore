@@ -6,3 +6,4 @@
 *.cnf
 data/
 annotation/migration/
+evaluation/data/
